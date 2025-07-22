@@ -1,22 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <title>3D Vector Plot</title>
-    <link rel="stylesheet" href="style.css">
-  </head>
-  <body>
-    <script type="module" src="/main.js"></script>
-    <div class = "gui">
-      <div class = "guiSection">
-        <div class = "guiSectionHeader">New Vector</div>
-        <input type = "text" id = "vectorName" placeholder = "Name">
-        <br>
-        <input type = "text" id = "vectorX" class = "numInput" placeholder = "x">
-        <input type = "text" id = "vectorY" class = "numInput" placeholder = "y">
-        <input type = "text" id = "vectorZ" class = "numInput" placeholder = "z">
-        <button id = "newVectorButton">+</button>
-      </div>
+
+<head>
+  <meta charset="utf-8">
+  <title>3D Vector Plot</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <script type="module" src="/main.js"></script>
+  <div class="gui">
+    <div class="guiSection">
+      <div class="guiSectionHeader">New Vector</div>
+      <input type="text" id="vectorName" placeholder="Name">
+      <br>
+      <input type="text" id="vectorX" class="numInput" placeholder="x">
+      <input type="text" id="vectorY" class="numInput" placeholder="y">
+      <input type="text" id="vectorZ" class="numInput" placeholder="z">
+      <button id="newVectorButton">+</button>
     </div>
-  </body>
+    <div class="guiSection" id="vectorList">
+      <div class="guiSectionHeader">Vectors</div>
+    </div>
+  </div>
+</body>
+
 </html>
