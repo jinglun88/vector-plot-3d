@@ -43,7 +43,7 @@ body {
 
 input[type="text"] {
     color: white;
-    background-color: black;
+    background-color: rgba(0, 0, 0, 0.6);
     border: 0;
     border-radius: 3px;
     margin: 3px;
@@ -87,4 +87,11 @@ button {
 #vectorList {
     padding-bottom: 5px;
     font-size: 22px;
+}
+
+.vectorDeleteButton {
+    position: relative;
+    top: 5px;
+    right: 5px;
+    float: right;
 }

@@ -127,13 +127,25 @@ function createVector(name, coords) {
 
     const vectorNode = document.createElement("div");
     const nameSpan = document.createElement("span");
-    nameSpan.className = "vectorName"
     const nameNode = document.createTextNode(name + " ");
-    nameSpan.appendChild(nameNode)
     const coordsNode = document.createTextNode("[" + coords[0] + "," + coords[1] + "," + coords[2] + "]");
+    const deleteNode = document.createElement("button");
+    
+    nameSpan.className = "vectorName"
+    deleteNode.className = "vectorDeleteButton"
+
+    nameSpan.appendChild(nameNode)
     vectorNode.appendChild(nameSpan);
     vectorNode.appendChild(coordsNode);
+    vectorNode.appendChild(deleteNode);
     vectorList.appendChild(vectorNode);
+
+    deleteNode.addEventListener("click", function() {
+        vector.remove(vectorLabel);
+        scene.remove(vector);
+        delete vectors[name];
+        deleteNode.parentNode.parentNode.removeChild(vectorNode);
+    })
 
     return vector;
 }
