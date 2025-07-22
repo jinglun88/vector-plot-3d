@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DObject, CSS2DRenderer } from 'three/addons/renderers/CSS2DRenderer.js';
+import { GUI } from 'three/addons/libs/lil-gui.module.min.js'
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
@@ -121,9 +122,22 @@ function createVector(name, coords) {
     return vector;
 }
 
+const nameField = document.getElementById("vectorName");
+const xField = document.getElementById("vectorX");
+const yField = document.getElementById("vectorY");
+const zField = document.getElementById("vectorZ");
+const newVectorButton = document.getElementById("newVectorButton");
+newVectorButton.addEventListener("click", function() {
+    const vectorName = nameField.value;
+    const xCoord = parseInt(xField.value);
+    const yCoord = parseInt(yField.value);
+    const zCoord = parseInt(zField.value);
+    scene.add(createVector(vectorName, [xCoord, yCoord, zCoord]));
+})
+
 scene.add(createVector("v", [3, 3, 3]));
 scene.add(createVector("u", [1, 2, -4]));
-scene.add(createVector("w", [-3, -4, 1]))
+scene.add(createVector("w", [-3, -4, 1]));
 
 function animate() {
     controls.update();
