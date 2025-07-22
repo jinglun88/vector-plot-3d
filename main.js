@@ -15,11 +15,6 @@ textRenderer.domElement.style.position = 'absolute';
 textRenderer.domElement.style.top = '0px';
 document.body.appendChild( textRenderer.domElement );
 
-// const geometry = new THREE.BoxGeometry( 1, 1, 1 );
-// const material = new THREE.MeshPhongMaterial( { color: 0x00ff00 } );
-// const cube = new THREE.Mesh( geometry, material );
-// scene.add( cube );
-
 const color = 0xFFFFFF;
 const intensity = 3;
 const light = new THREE.DirectionalLight(color, intensity);
@@ -131,8 +126,6 @@ scene.add(createVector("u", [1, 2, -4]));
 scene.add(createVector("w", [-3, -4, 1]))
 
 function animate() {
-    // cube.rotation.x += 0.01;
-    // cube.rotation.y += 0.01;
     controls.update();
     renderer.render( scene, camera );
     textRenderer.render( scene, camera );
