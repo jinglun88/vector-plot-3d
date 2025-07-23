@@ -66,6 +66,8 @@ scene.add( zAxis );
 
 const controls = new OrbitControls( camera, textRenderer.domElement );
 controls.enablePan = false;
+controls.enableDamping = true;
+controls.dampingFactor = 0.05;
 
 const xAxisDiv = document.createElement( 'div' );
 xAxisDiv.className = 'label';
@@ -130,7 +132,7 @@ function createVector(name, coords) {
     const nameNode = document.createTextNode(name + " ");
     const coordsNode = document.createTextNode("[" + coords[0] + "," + coords[1] + "," + coords[2] + "]");
     const deleteNode = document.createElement("button");
-    
+
     nameSpan.className = "vectorName"
     deleteNode.className = "vectorDeleteButton"
 
@@ -144,7 +146,7 @@ function createVector(name, coords) {
         vector.remove(vectorLabel);
         scene.remove(vector);
         delete vectors[name];
-        deleteNode.parentNode.parentNode.removeChild(vectorNode);
+        deleteNode.parentNode.parentNode.removeChild(deleteNode.parentNode);
     })
 
     return vector;
@@ -164,6 +166,10 @@ newVectorButton.addEventListener("click", function() {
     const xCoord = parseInt(xField.value);
     const yCoord = parseInt(yField.value);
     const zCoord = parseInt(zField.value);
+    nameField.value = "";
+    xField.value = "";
+    yField.value = "";
+    zField.value = "";
     if (isNaN(xCoord) || isNaN(yCoord) || isNaN(zCoord)){
         return;
     }
