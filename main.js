@@ -102,6 +102,18 @@ zAxisLabel.position.set(0, 0, 5);
 zAxisLabel.center.set( 1, 1 );
 zAxis.add( zAxisLabel );
 
+const collapsible = document.getElementById("collapsible");
+const gui = document.getElementById("gui");
+
+collapsible.addEventListener('click', function () {
+    if (gui.style.display != "none"){
+        gui.style.display = "none";
+    }
+    else {
+        gui.style.display = "block";
+    }
+})
+
 const vectors = {};
 
 const vectorList = document.getElementById("vectorList");
