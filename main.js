@@ -30,6 +30,7 @@ const redMateral = new THREE.LineBasicMaterial( {color: 0xffffff } );
 const greenMateral = new THREE.LineBasicMaterial( {color: 0xffffff } );
 const blueMateral = new THREE.LineBasicMaterial( {color: 0xffffff } );
 const realBlueMateral = new THREE.LineBasicMaterial( {color: 0x236B8E } );
+const edgeMaterial = new THREE.LineBasicMaterial( {color: 0xABDBE3, transparent: true, opacity: 0.6 });
 
 const yellowMaterial = new THREE.LineBasicMaterial( {color: 0xFFFF00 } );
 
@@ -373,6 +374,8 @@ function createPlane(vec1, vec2) {
     //console.log(intersections2D);
     const plane2D = new THREE.Shape(intersections2D);
     const geometry2D = new THREE.ShapeGeometry(plane2D);
+    const geometryEdge = new THREE.EdgesGeometry(geometry2D);
+    const edgeLines = new THREE.Line(geometryEdge, edgeMaterial);
     const mesh = new THREE.Mesh(
         geometry2D,
         bluePlaneMaterial
@@ -380,8 +383,10 @@ function createPlane(vec1, vec2) {
     //console.log(mesh.geometry.attributes.position.array);
     //console.log(transformation);
     mesh.applyMatrix4(transform3D);
+    edgeLines.applyMatrix4(transform3D);
     //console.log(mesh);
     scene.add(mesh);
+    scene.add(edgeLines);
 }
 
 function checkSharedFace(p1, p2) {
@@ -412,9 +417,9 @@ newVectorButton.addEventListener("click", function() {
     scene.add(createVector(vectorName, [xCoord, yCoord, zCoord]));
 })
 
-scene.add(createVector("v", [1, 3, 4]));
-scene.add(createVector("u", [4, 2, -4]));
-scene.add(createVector("w", [-3, -4, 1]));
+scene.add(createVector("v", [1, 2, 1]));
+scene.add(createVector("u", [4, 0, -3]));
+scene.add(createVector("w", [1, -1, 3]));
 
 createPlane(vectors["v"], vectors["u"]);
 
