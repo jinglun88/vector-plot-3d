@@ -90,12 +90,22 @@ button {
     margin-left: 5px;
 }
 
+.planeName {
+    font-style: italic;
+    margin-left: 5px;
+}
+
 #vectorList {
     padding-bottom: 5px;
     font-size: 22px;
 }
 
-.vectorDeleteButton {
+#planeList {
+    padding-bottom: 5px;
+    font-size: 22px;
+}
+
+.vectorDeleteButton, .planeDeleteButton {
     position: relative;
     top: 5px;
     right: 5px;
@@ -125,4 +135,20 @@ canvas {
     right: 0;
     left: 0;
     bottom: 0;
+}
+
+#planeBuilder {
+    display: none;
+}
+select {
+    font-family: "lmroman10", serif;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.4);
+    border-radius: 3px;
+    border: 0px;
+    font-size: 18px;
+    padding: 0px;
+    height: 25px;
+    width: 80px;
+    padding-left: 3px;
 }

@@ -9,21 +9,37 @@
 
 <body>
   <script type="module" src="/main.js"></script>
-  <div class="gui" id = "gui">
+  <div class="gui" id="gui">
     <div class="guiSection">
-      <div class="guiSectionHeader">New Vector</div>
+      <div class="guiSectionHeader">New <select id="typeSelect">
+          <option value="vector">Vector</option>
+          <option value="plane">Plane</option>
+        </select>
+      </div>
+      <div id = "vectorBuilder">
       <input type="text" id="vectorName" placeholder="Name">
       <br>
       <input type="text" id="vectorX" class="numInput" placeholder="x">
       <input type="text" id="vectorY" class="numInput" placeholder="y">
       <input type="text" id="vectorZ" class="numInput" placeholder="z">
       <button id="newVectorButton">+</button>
+      </div>
+      <div id = "planeBuilder">
+        <input type="text" id="planeName" placeholder="Name">
+      <input type="text" id="vector1Name" placeholder="Vector 1">
+      <input type="text" id="vector2Name" placeholder="Vector 2">
+      <br>
+      <button id="newPlaneButton">+</button>
+      </div>
     </div>
     <div class="guiSection" id="vectorList">
       <div class="guiSectionHeader">Vectors</div>
     </div>
+    <div class="guiSection" id="planeList">
+      <div class="guiSectionHeader">Planes</div>
+    </div>
   </div>
-  <button class = "collapsible" id = "collapsible">&#9776;</button>
+  <button class="collapsible" id="collapsible">&#9776;</button>
 </body>
 
 </html>
