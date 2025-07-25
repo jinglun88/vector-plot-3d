@@ -22,10 +22,12 @@ light.position.set(-1, 2, 4);
 scene.add(light);
 camera.position.z = 10;
 
-const gridSize = 10;
-const gridXZ = new THREE.GridHelper( 10, 10, 0xFFFFFF, 0x236B8E );
-const gridXY = new THREE.GridHelper( 10, 10, 0xFFFFFF, 0x236B8E );
-const gridYZ = new THREE.GridHelper( 10, 10, 0xFFFFFF, 0x236B8E );
+let zoomFactor = 1;
+const r = 5;
+const gridSize = 2*r;
+let gridXZ = new THREE.GridHelper( gridSize, 10, 0xFFFFFF, 0x236B8E );
+let gridXY = new THREE.GridHelper( gridSize, 10, 0xFFFFFF, 0x236B8E );
+let gridYZ = new THREE.GridHelper( gridSize, 10, 0xFFFFFF, 0x236B8E );
 
 
 
@@ -39,7 +41,8 @@ const yellowMaterial = new THREE.LineBasicMaterial( {color: 0xFFFF00 } );
 
 const bluePlaneMaterial = new THREE.MeshBasicMaterial( {color: 0x8888FF, side: THREE.DoubleSide, transparent: true, opacity: 0.3 } );
 const CoordinatePlaneMaterial = new THREE.MeshBasicMaterial( {color: 0x000000, side: THREE.DoubleSide, transparent: true, opacity: 0 });
-const shadowMaterial = new THREE.MeshBasicMaterial( {color: 0x000000, side: THREE.DoubleSide, transparent: true, opacity: 0.025});
+const shadowMaterial = new THREE.MeshBasicMaterial( {color: 0x000000, side: THREE.DoubleSide, transparent: true, opacity: 0.03});
+const whiteLineMaterial = new THREE.LineBasicMaterial( {color: 0xFFFFFF });
 
 const SHADOW_DISTANCE = 70;
 const shadowShapes = [];
@@ -59,10 +62,10 @@ for (let i = 0; i < SHADOW_DISTANCE; i++) {
 }
 
 const planePoints = [];
-planePoints.push(new THREE.Vector2(-5, -5));
-planePoints.push(new THREE.Vector2(-5, 5));
-planePoints.push(new THREE.Vector2(5, 5));
-planePoints.push(new THREE.Vector2(5, -5));
+planePoints.push(new THREE.Vector2(-r, -r));
+planePoints.push(new THREE.Vector2(-r, r));
+planePoints.push(new THREE.Vector2(r, r));
+planePoints.push(new THREE.Vector2(r, -r));
 const XZplaneShape = new THREE.Shape(planePoints);
 const XYplaneShape = new THREE.Shape(planePoints);
 const YZplaneShape = new THREE.Shape(planePoints);
@@ -76,7 +79,6 @@ const XYplane = new THREE.Mesh(XYgeometry, CoordinatePlaneMaterial);
 const YZplane = new THREE.Mesh(YZgeometry, CoordinatePlaneMaterial);
 
 const cubeEdges = [];
-const r = 5;
 cubeEdges.push(new THREE.Line3(new THREE.Vector3(-r, -r, -r), new THREE.Vector3(-r, -r, r)));
 cubeEdges.push(new THREE.Line3(new THREE.Vector3(-r, -r, -r), new THREE.Vector3(-r, r, -r)));
 cubeEdges.push(new THREE.Line3(new THREE.Vector3(-r, -r, -r), new THREE.Vector3(r, -r, -r)));
@@ -93,6 +95,38 @@ for (let i = 0; i < cubeEdges.length; i++) {
     const edgeGeometry = new THREE.BufferGeometry().setFromPoints( [cubeEdges[i].start, cubeEdges[i].end] );
     const edge = new THREE.Line( edgeGeometry, realBlueMateral );
     scene.add(edge);
+}
+
+const planeLines = [];
+const XZpoints = [];
+const XYpoints = [];
+const YZpoints = [];
+
+XZpoints.push(new THREE.Vector3(-r, 0, -r));
+XZpoints.push(new THREE.Vector3(-r, 0, r));
+XZpoints.push(new THREE.Vector3(r, 0, r));
+XZpoints.push(new THREE.Vector3(r, 0, -r));
+XZpoints.push(XZpoints[0]);
+
+XYpoints.push(new THREE.Vector3(-r, -r, 0));
+XYpoints.push(new THREE.Vector3(-r, r, 0));
+XYpoints.push(new THREE.Vector3(r, r, 0));
+XYpoints.push(new THREE.Vector3(r, -r, 0));
+XYpoints.push(XYpoints[0]);
+
+YZpoints.push(new THREE.Vector3(0, -r, -r));
+YZpoints.push(new THREE.Vector3(0, -r, r));
+YZpoints.push(new THREE.Vector3(0, r, r));
+YZpoints.push(new THREE.Vector3(0, r, -r));
+YZpoints.push(YZpoints[0]);
+
+planeLines.push(new THREE.Line(new THREE.BufferGeometry().setFromPoints(XZpoints), whiteLineMaterial));
+planeLines.push(new THREE.Line(new THREE.BufferGeometry().setFromPoints(XYpoints), whiteLineMaterial));
+planeLines.push(new THREE.Line(new THREE.BufferGeometry().setFromPoints(YZpoints), whiteLineMaterial));
+
+for (let i = 0; i < 3; i++){
+    planeLines[i].renderOrder = 1;
+    scene.add(planeLines[i]);
 }
 
 gridXY.rotation.x = Math.PI/2;
@@ -142,6 +176,7 @@ const controls = new OrbitControls( camera, textRenderer.domElement );
 controls.enablePan = false;
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
+controls.enableZoom = false;
 
 const xAxisDiv = document.createElement( 'div' );
 xAxisDiv.className = 'label';
@@ -162,19 +197,30 @@ zAxisDiv.style.color = '#FFFFFF';
 zAxisDiv.style.backgroundColor = 'transparent';
 
 const xAxisLabel = new CSS2DObject( xAxisDiv );
-xAxisLabel.position.set(5, 0, 0);
+xAxisLabel.position.set(r+0.5, 0, 0);
 xAxisLabel.center.set( 1, 1 );
 xAxis.add( xAxisLabel );
 
 const yAxisLabel = new CSS2DObject( yAxisDiv );
-yAxisLabel.position.set(0, 5, 0);
+yAxisLabel.position.set(0, r+0.5, 0);
 yAxisLabel.center.set( 1, 1 );
 yAxis.add( yAxisLabel );
 
 const zAxisLabel = new CSS2DObject( zAxisDiv );
-zAxisLabel.position.set(0, 0, 5);
+zAxisLabel.position.set(0, 0, r+0.5);
 zAxisLabel.center.set( 1, 1 );
 zAxis.add( zAxisLabel );
+
+const originDiv = document.createElement( 'div' );
+originDiv.className = 'originLabel';
+originDiv.textContent = '0';
+originDiv.style.color = '#FFFFFF';
+originDiv.style.backgroundColor = 'transparent';
+
+const originLabel = new CSS2DObject( originDiv );
+originLabel.position.set(0, 0, 0);
+originLabel.center.set( 0, 1 );
+xAxis.add(originLabel);
 
 const collapsible = document.getElementById("collapsible");
 const gui = document.getElementById("gui");
@@ -189,6 +235,16 @@ collapsible.addEventListener('click', function () {
 })
 
 const vectors = {};
+
+class Vector3D {
+    constructor(vector, element, x, y, z) {
+        this.vector = vector;
+        this.element = element;
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+}
 
 const vectorList = document.getElementById("vectorList");
 
@@ -214,7 +270,6 @@ function createVector(name, coords) {
     vectorLabel.center.set( 1, 1 );
     vector.add( vectorLabel );
 
-    vectors[name] = vector;
     //console.log(vector.geometry.attributes.position.array);
 
     const vectorNode = document.createElement("div");
@@ -236,11 +291,17 @@ function createVector(name, coords) {
     deleteNode.addEventListener("click", function() {
         vector.remove(vectorLabel);
         scene.remove(vector);
+        vector.geometry.dispose();
+        vector.material.dispose();
         delete vectors[name];
         const parent = deleteNode.parentNode;
         parent.removeChild(deleteNode);
         parent.parentNode.removeChild(parent);
     })
+
+    const vectorObject = new Vector3D(vector, vectorNode, coords[0], coords[1], coords[2]);
+
+    vectors[name] = vectorObject;
 
     return vector;
 }
@@ -258,42 +319,20 @@ function dot(v1, v2) {
     return (v1[0]*v2[0] + v1[1] + v2[1] + v1[2] * v2[2]);
 }
 
-// Finds the point of intersection of a line and plane in R3
-// Line should be in form [x, y, z, d, e, f] with (x, y, z) + s(d, e, f) as the vector equation
-// Plane should be in form [a, b, c] with equation ax + by + cz = 0
-function linePlaneIntersection(v, P) {
-    directionVector = [v[3], v[4], v[5]];
-    if (dot(directionVector, P) == 0) {
-        if (P[0]*v[0] + P[1]*v[1] + P[2]*v[2] == 0){
-            return true;
-        }
-        return false;
-    }
-    // a(x + sd) + b(y + se) + c(z + sf) = 0
-    // ax + asd + by + bse + cz + csf = 0
-    // asd + bse + csf = -(ax + by + cz)
-    // s(ad + be + cf) = -(ax + by + cz)
-    // s = -(ax + by + cz)/(ad + be + cf)
-    ans = [v[0] - (P[0]*v[0] + P[1]*v[1] + P[2]*v[2])/(P[0]*v[3] + P[1]*v[4] + P[2]*v[5])*v[3], v[1] - (P[0]*v[0] + P[1]*v[1] + P[2]*v[2])/(P[0]*v[3] + P[1]*v[4] + P[2]*v[5])*v[4], v[2] - (P[0]*v[0] + P[1]*v[1] + P[2]*v[2])/(P[0]*v[3] + P[1]*v[4] + P[2]*v[5])*v[5]];
-    const gridRadius = 5;
-    if (Math.abs(ans[0]) <= gridRadius && Math.abs(ans[1]) <= gridRadius && Math.abs(ans[2] <= gridRadius)) {
-        return ans;
-    }
-    return false;
-}
-
 const planes = {};
 
-function Plane3D(plane, edges, orthoBasis, element, name) {
-    this.plane = plane;
-    this.edges = edges;
-    this.orthoBasis = orthoBasis;
-    this.element = element;
+class Plane3D {
+    constructor(plane, edges, orthoBasis, element, name) {
+        this.plane = plane;
+        this.edges = edges;
+        this.orthoBasis = orthoBasis;
+        this.element = element;
+    }
 }
 
 function createPlane(vecName1, vecName2, name) {
-    const vec1 = vectors[vecName1];
-    const vec2 = vectors[vecName2];
+    const vec1 = vectors[vecName1].vector;
+    const vec2 = vectors[vecName2].vector;
     const u1 = vec1.geometry.attributes.position.array;
     const v1 = vec2.geometry.attributes.position.array;
     const ua = [u1[3], u1[4], u1[5]];
@@ -306,7 +345,6 @@ function createPlane(vecName1, vecName2, name) {
 
     const plane = new THREE.Plane(normalVec.normalize());
     const edges = [];
-    const r = 5;
     edges.push(new THREE.Line3(new THREE.Vector3(-r, -r, -r), new THREE.Vector3(-r, -r, r)));
     edges.push(new THREE.Line3(new THREE.Vector3(-r, -r, -r), new THREE.Vector3(-r, r, -r)));
     edges.push(new THREE.Line3(new THREE.Vector3(-r, -r, -r), new THREE.Vector3(r, -r, -r)));
@@ -319,19 +357,6 @@ function createPlane(vecName1, vecName2, name) {
     edges.push(new THREE.Line3(new THREE.Vector3(r, -r, r), new THREE.Vector3(-r, -r, r)));
     edges.push(new THREE.Line3(new THREE.Vector3(r, -r, r), new THREE.Vector3(r, r, r)));
     edges.push(new THREE.Line3(new THREE.Vector3(r, -r, r), new THREE.Vector3(r, -r, -r)));
-
-    // edges.push(new THREE.Line3(new THREE.Vector3(-r, -r, r), new THREE.Vector3(-r, -r, -r)));
-    // edges.push(new THREE.Line3(new THREE.Vector3(-r, r, -r), new THREE.Vector3(-r, -r, -r)));
-    // edges.push(new THREE.Line3(new THREE.Vector3(r, -r, -r), new THREE.Vector3(-r, -r, -r)));
-    // edges.push(new THREE.Line3(new THREE.Vector3(-r, r, -r), new THREE.Vector3(-r, r, r)));
-    // edges.push(new THREE.Line3(new THREE.Vector3(r, r, r), new THREE.Vector3(-r, r, r)));
-    // edges.push(new THREE.Line3(new THREE.Vector3(-r, -r, r), new THREE.Vector3(-r, r, r)));
-    // edges.push(new THREE.Line3(new THREE.Vector3(-r, r, -r), new THREE.Vector3(r, r, -r)));
-    // edges.push(new THREE.Line3(new THREE.Vector3(r, -r, -r), new THREE.Vector3(r, r, -r)));
-    // edges.push(new THREE.Line3(new THREE.Vector3(r, r, r), new THREE.Vector3(r, r, -r)));
-    // edges.push(new THREE.Line3(new THREE.Vector3(-r, -r, r), new THREE.Vector3(r, -r, r)));
-    // edges.push(new THREE.Line3(new THREE.Vector3(r, r, r), new THREE.Vector3(r, -r, r)));
-    // edges.push(new THREE.Line3(new THREE.Vector3(r, -r, -r), new THREE.Vector3(r, -r, r)));
     
     const intersectionsUnfiltered = [];
     for (let i = 0; i < edges.length; i++) {
@@ -419,12 +444,16 @@ function createPlane(vecName1, vecName2, name) {
     planes[name] = (new Plane3D(mesh, edgeLines, orthogonalBasis, planeNode, name));
 
     deleteNode.addEventListener("click", function() {
-    scene.remove(planes[name].plane)
-    scene.remove(planes[name].edges);
-    delete planes[name];
-    const parent = deleteNode.parentNode;
-    parent.removeChild(deleteNode);
-    parent.parentNode.removeChild(parent);
+        scene.remove(planes[name].plane)
+        planes[name].plane.geometry.dispose();
+        planes[name].plane.material.dispose();
+        scene.remove(planes[name].edges);
+        planes[name].edges.geometry.dispose();
+        planes[name].edges.material.dispose();
+        delete planes[name];
+        const parent = deleteNode.parentNode;
+        parent.removeChild(deleteNode);
+        parent.parentNode.removeChild(parent);
     })
 }
 
@@ -500,6 +529,16 @@ selectType.addEventListener('change', function() {
     }
 })
 
+document.addEventListener("wheel", function (event) {
+    if (event.deltaY < 0){
+        zoomFactor *= 1.1;
+    }
+    else {
+        zoomFactor *= (1/1.1);
+    }
+    console.log(event.deltaY);
+})
+
 function animate() {
     controls.update();
     for (let i = 0; i < SHADOW_DISTANCE; i++){
@@ -513,6 +552,133 @@ function animate() {
         shadowMeshes[i].setRotationFromMatrix(cameraMatrix);
         shadowMeshes[i].position.copy(relativePosition.multiplyScalar((i-50)*0.1*Math.sqrt(3)));
     }
+    for (const key in vectors) {
+        if (vectors.hasOwnProperty(key)) {
+            const vectorObj = vectors[key];
+            const positionReference = vectorObj.vector.geometry.attributes.position;
+            positionReference.setXYZ(1, vectorObj.x*zoomFactor, vectorObj.y*zoomFactor, vectorObj.z*zoomFactor);
+            positionReference.needsUpdate = true;
+
+            const label = vectorObj.vector.children[0];
+            label.position.x = vectorObj.x*zoomFactor;
+            label.position.y = vectorObj.y*zoomFactor;
+            label.position.z = vectorObj.z*zoomFactor;
+            label.needsUpdate = true;
+        }
+    }
+    const scale = r/zoomFactor;
+    let squareSizeMax = scale/4;
+    const largestPower = Math.pow(10, Math.floor(Math.log10(squareSizeMax)));
+    let squareSize = largestPower;
+    if (largestPower*2 <= squareSizeMax){
+        squareSize = largestPower*2;
+    }
+    if (largestPower*2.5 <= squareSizeMax){
+        squareSize = largestPower*2.5;
+    }
+    if (largestPower*5 <= squareSizeMax){
+        squareSize = largestPower*5;
+    }
+    const squares = Math.floor(scale/squareSize);
+
+    scene.remove(gridXZ);
+    scene.remove(gridXY);
+    scene.remove(gridYZ);
+    gridXZ.geometry.dispose();
+    gridXZ.material.dispose();
+    gridXY.geometry.dispose();
+    gridXY.material.dispose();
+    gridYZ.geometry.dispose();
+    gridYZ.material.dispose();
+    const newXZ = new THREE.GridHelper(2*r*squares*squareSize/scale, squares*2, 0xFFFFFF, 0x236B8E );
+    const newXY = new THREE.GridHelper(2*r*squares*squareSize/scale, squares*2, 0xFFFFFF, 0x236B8E );
+    const newYZ = new THREE.GridHelper(2*r*squares*squareSize/scale, squares*2, 0xFFFFFF, 0x236B8E );
+    newXY.rotation.x = Math.PI/2;
+    newYZ.rotation.z = Math.PI/2;
+    const gridPositions = [];
+    gridPositions.push(newXZ.geometry.attributes.position.array);
+    gridPositions.push(newXY.geometry.attributes.position.array);
+    gridPositions.push(newYZ.geometry.attributes.position.array);
+    for (let j = 0; j < 3; j++){
+        for (let i = 0; i < gridPositions[0].length; i+= 12) {
+            gridPositions[j][i] = -r;
+            gridPositions[j][i+3] = r;
+            gridPositions[j][i+8] = -r;
+            gridPositions[j][i+11] = r;
+        }
+    }
+    const axes = [xAxis, yAxis, zAxis];
+    for (let i = 0; i < axes.length; i++){
+        for (let j = 0; j < axes[i].children.length; j++){
+            console.log(axes[i].children[j].element.className);
+            console.log(axes[i].children[j].element.className == 'scaleLabel');
+            if (axes[i].children[j].element.className == 'scaleLabel') {
+                scene.remove(axes[i].children[j]);
+                axes[i].children[j].removeFromParent();
+            }
+        }
+    }
+    
+    for (let i = -Math.floor(squares/2)*2; i <= squares; i += 2) {
+        if (i != 0){
+            let scaleLabelDiv = document.createElement( 'div' );
+            scaleLabelDiv.className = 'scaleLabel';
+            if (Math.abs(i*squareSize) < 1){
+                scaleLabelDiv.textContent = (i*squareSize).toPrecision(1);
+            }
+            else {
+                scaleLabelDiv.textContent = i*squareSize;
+            }
+            scaleLabelDiv.style.color = '#FFFFFF';
+            scaleLabelDiv.style.backgroundColor = 'transparent';
+
+            let scaleLabel = new CSS2DObject( scaleLabelDiv );
+            scaleLabel.position.set(squareSize*i*zoomFactor, 0, 0);
+            scaleLabel.center.set( 1, 1 );
+            xAxis.add( scaleLabel );
+
+            scaleLabelDiv = document.createElement( 'div' );
+            scaleLabelDiv.className = 'scaleLabel';
+            if (Math.abs(i*squareSize) < 1){
+                scaleLabelDiv.textContent = (i*squareSize).toPrecision(1);
+            }
+            else {
+                scaleLabelDiv.textContent = i*squareSize;
+            }
+            scaleLabelDiv.style.color = '#FFFFFF';
+            scaleLabelDiv.style.backgroundColor = 'transparent';
+
+            scaleLabel = new CSS2DObject( scaleLabelDiv );
+            scaleLabel.position.set(0, squareSize*i*zoomFactor, 0);
+            scaleLabel.center.set( 1, 1 );
+            yAxis.add( scaleLabel );
+
+            scaleLabelDiv = document.createElement( 'div' );
+            scaleLabelDiv.className = 'scaleLabel';
+            if (Math.abs(i*squareSize) < 1){
+                scaleLabelDiv.textContent = (i*squareSize).toPrecision(1);
+            }
+            else {
+                scaleLabelDiv.textContent = i*squareSize;
+            }
+            scaleLabelDiv.style.color = '#FFFFFF';
+            scaleLabelDiv.style.backgroundColor = 'transparent';
+
+            scaleLabel = new CSS2DObject( scaleLabelDiv );
+            scaleLabel.position.set(0, 0, squareSize*i*zoomFactor);
+            scaleLabel.center.set( 1, 1 );
+            zAxis.add( scaleLabel );
+        }
+    }
+
+
+    scene.add(newXZ);
+    scene.add(newXY);
+    scene.add(newYZ);
+    gridXZ = newXZ;
+    gridXY = newXY;
+    gridYZ = newYZ;
+
     renderer.render( scene, camera );
     textRenderer.render( scene, camera );
 }
