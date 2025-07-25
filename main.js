@@ -54,7 +54,7 @@ for (let i = 0; i < SHADOW_DISTANCE; i++) {
     shadowShapes.push(new THREE.Shape(shadowPoints));
     shadowGeometries.push(new THREE.ShapeGeometry(shadowShapes[i]));
     shadowMeshes.push(new THREE.Mesh(shadowGeometries[i], shadowMaterial));
-    shadowMeshes[i].renderOrder = 1;
+    shadowMeshes[i].renderOrder = 2;
     scene.add(shadowMeshes[i]);
 }
 
@@ -130,9 +130,9 @@ XZplane.renderOrder = 1;
 XYplane.renderOrder = 1;
 YZplane.renderOrder = 1;
 
-scene.add( XZplane );
-scene.add( XYplane );
-scene.add( YZplane );
+// scene.add( XZplane );
+// scene.add( XYplane );
+// scene.add( YZplane );
 
 scene.add( xAxis );
 scene.add( yAxis );
@@ -320,18 +320,18 @@ function createPlane(vecName1, vecName2, name) {
     edges.push(new THREE.Line3(new THREE.Vector3(r, -r, r), new THREE.Vector3(r, r, r)));
     edges.push(new THREE.Line3(new THREE.Vector3(r, -r, r), new THREE.Vector3(r, -r, -r)));
 
-    edges.push(new THREE.Line3(new THREE.Vector3(-r, -r, r), new THREE.Vector3(-r, -r, -r)));
-    edges.push(new THREE.Line3(new THREE.Vector3(-r, r, -r), new THREE.Vector3(-r, -r, -r)));
-    edges.push(new THREE.Line3(new THREE.Vector3(r, -r, -r), new THREE.Vector3(-r, -r, -r)));
-    edges.push(new THREE.Line3(new THREE.Vector3(-r, r, -r), new THREE.Vector3(-r, r, r)));
-    edges.push(new THREE.Line3(new THREE.Vector3(r, r, r), new THREE.Vector3(-r, r, r)));
-    edges.push(new THREE.Line3(new THREE.Vector3(-r, -r, r), new THREE.Vector3(-r, r, r)));
-    edges.push(new THREE.Line3(new THREE.Vector3(-r, r, -r), new THREE.Vector3(r, r, -r)));
-    edges.push(new THREE.Line3(new THREE.Vector3(r, -r, -r), new THREE.Vector3(r, r, -r)));
-    edges.push(new THREE.Line3(new THREE.Vector3(r, r, r), new THREE.Vector3(r, r, -r)));
-    edges.push(new THREE.Line3(new THREE.Vector3(-r, -r, r), new THREE.Vector3(r, -r, r)));
-    edges.push(new THREE.Line3(new THREE.Vector3(r, r, r), new THREE.Vector3(r, -r, r)));
-    edges.push(new THREE.Line3(new THREE.Vector3(r, -r, -r), new THREE.Vector3(r, -r, r)));
+    // edges.push(new THREE.Line3(new THREE.Vector3(-r, -r, r), new THREE.Vector3(-r, -r, -r)));
+    // edges.push(new THREE.Line3(new THREE.Vector3(-r, r, -r), new THREE.Vector3(-r, -r, -r)));
+    // edges.push(new THREE.Line3(new THREE.Vector3(r, -r, -r), new THREE.Vector3(-r, -r, -r)));
+    // edges.push(new THREE.Line3(new THREE.Vector3(-r, r, -r), new THREE.Vector3(-r, r, r)));
+    // edges.push(new THREE.Line3(new THREE.Vector3(r, r, r), new THREE.Vector3(-r, r, r)));
+    // edges.push(new THREE.Line3(new THREE.Vector3(-r, -r, r), new THREE.Vector3(-r, r, r)));
+    // edges.push(new THREE.Line3(new THREE.Vector3(-r, r, -r), new THREE.Vector3(r, r, -r)));
+    // edges.push(new THREE.Line3(new THREE.Vector3(r, -r, -r), new THREE.Vector3(r, r, -r)));
+    // edges.push(new THREE.Line3(new THREE.Vector3(r, r, r), new THREE.Vector3(r, r, -r)));
+    // edges.push(new THREE.Line3(new THREE.Vector3(-r, -r, r), new THREE.Vector3(r, -r, r)));
+    // edges.push(new THREE.Line3(new THREE.Vector3(r, r, r), new THREE.Vector3(r, -r, r)));
+    // edges.push(new THREE.Line3(new THREE.Vector3(r, -r, -r), new THREE.Vector3(r, -r, r)));
     
     const intersectionsUnfiltered = [];
     for (let i = 0; i < edges.length; i++) {
@@ -358,6 +358,9 @@ function createPlane(vecName1, vecName2, name) {
             intersections.push(i1);
         }
     }
+    for (let i = 0; i < intersections.length; i++){
+        console.log([intersections[i].x, intersections[i].y, intersections[i].z]);
+    }
     let temp;
     for (let i = 0; i < intersections.length; i++){
         for (let j = i + 1; j < intersections.length; j++){
@@ -369,6 +372,10 @@ function createPlane(vecName1, vecName2, name) {
             }
         }
     }
+    for (let i = 0; i < intersections.length; i++){
+        console.log([intersections[i].x, intersections[i].y, intersections[i].z]);
+    }
+
     const vOrtho = new THREE.Vector3().crossVectors(u, plane.normal).normalize();
     const transform3D = new THREE.Matrix4().makeBasis(u.normalize(), vOrtho, plane.normal);
     const transform2D = new THREE.Matrix4().copy(transform3D).invert();
@@ -387,9 +394,11 @@ function createPlane(vecName1, vecName2, name) {
     const orthogonalBasis = [u, vOrtho, plane.normal];
     mesh.applyMatrix4(transform3D);
     edgeLines.applyMatrix4(transform3D);
-    mesh.renderOrder = 0;
+    mesh.renderOrder = 1;
     scene.add(mesh);
     scene.add(edgeLines);
+
+    console.log(mesh)
 
     const planeNode = document.createElement("div");
     const nameSpan = document.createElement("span");
@@ -420,7 +429,9 @@ function createPlane(vecName1, vecName2, name) {
 }
 
 function checkSharedFace(p1, p2) {
-    return (p1.x == p2.x || p1.y == p2.y || p1.z == p2.z);
+    console.log([[p1.x, p1.y, p1.z], [p2.x, p2.y, p2.z]]);
+    console.log((p1.x == p2.x && Math.abs(p1.x) == 5) || (p1.y == p2.y && Math.abs(p1.y) == 5) || (p1.z == p2.z && Math.abs(p1.z) == 5));
+    return ((p1.x == p2.x && Math.abs(p1.x) == 5) || (p1.y == p2.y && Math.abs(p1.y) == 5) || (p1.z == p2.z && Math.abs(p1.z) == 5));
 }
 
 const nameField = document.getElementById("vectorName");
