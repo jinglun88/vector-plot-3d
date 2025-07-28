@@ -288,6 +288,20 @@ function createVector(name, coords) {
     vectorNode.appendChild(deleteNode);
     vectorList.appendChild(vectorNode);
 
+    const vectorOption1 = document.createElement("option");
+    const vectorOption2 = document.createElement("option");
+    vectorOption1.value = name;
+    vectorOption2.value = name;
+    const vectorOption1Text = document.createTextNode(name);
+    const vectoroption2Text = document.createTextNode(name);
+    vectorOption1.appendChild(vectorOption1Text);
+    vectorOption2.appendChild(vectoroption2Text);
+    const vectorSelect1 = document.getElementById("vector1Name");
+    const vectorSelect2 = document.getElementById("vector2Name");
+    vectorSelect1.appendChild(vectorOption1);
+    vectorSelect2.appendChild(vectorOption2);
+    
+
     deleteNode.addEventListener("click", function() {
         vector.remove(vectorLabel);
         scene.remove(vector);
@@ -295,8 +309,12 @@ function createVector(name, coords) {
         vector.material.dispose();
         delete vectors[name];
         const parent = deleteNode.parentNode;
-        parent.removeChild(deleteNode);
+        parent.replaceChildren();
         parent.parentNode.removeChild(parent);
+        vectorOption1.removeChild(vectorOption1Text);
+        vectorOption2.removeChild(vectoroption2Text);
+        vectorSelect1.removeChild(vectorOption1);
+        vectorSelect2.removeChild(vectorOption2);
     })
 
     const vectorObject = new Vector3D(vector, vectorNode, coords[0], coords[1], coords[2]);
@@ -539,6 +557,21 @@ document.addEventListener("wheel", function (event) {
     console.log(event.deltaY);
 })
 
+const zoomIn = document.getElementById("zoomIn");
+const zoomOut = document.getElementById("zoomOut");
+
+zoomIn.addEventListener('click', function () {
+    camera.position.x /= 1.1;
+    camera.position.y /= 1.1;
+    camera.position.z /= 1.1;
+})
+
+zoomOut.addEventListener('click', function () {
+    camera.position.x *= 1.1;
+    camera.position.y *= 1.1;
+    camera.position.z *= 1.1;
+})
+
 function animate() {
     controls.update();
     for (let i = 0; i < SHADOW_DISTANCE; i++){
@@ -650,7 +683,7 @@ function animate() {
 
             scaleLabel = new CSS2DObject( scaleLabelDiv );
             scaleLabel.position.set(0, squareSize*i*zoomFactor, 0);
-            scaleLabel.center.set( 1, 1 );
+            scaleLabel.center.set(-0.1, 1 );
             yAxis.add( scaleLabel );
 
             scaleLabelDiv = document.createElement( 'div' );
