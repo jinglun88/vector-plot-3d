@@ -28,7 +28,7 @@ const gridSize = 2*r;
 let gridXZ = new THREE.GridHelper( gridSize, 10, 0xFFFFFF, 0x236B8E );
 let gridXY = new THREE.GridHelper( gridSize, 10, 0xFFFFFF, 0x236B8E );
 let gridYZ = new THREE.GridHelper( gridSize, 10, 0xFFFFFF, 0x236B8E );
-
+const gridPositions = [];
 
 
 const redMateral = new THREE.LineBasicMaterial( {color: 0xffffff } );
@@ -451,9 +451,10 @@ function createPlane(vecName1, vecName2, name) {
 
     nameSpan.className = "planeName"
     deleteNode.className = "planeDeleteButton"
+    planeNode.className = "planeInfo"
 
     nameSpan.appendChild(nameNode);
-    nameSpan.appendChild(document.createTextNode(String.fromCodePoint(8407)));
+    nameSpan.appendChild(document.createTextNode(String.fromCodePoint(8407))); // arrow doesn't display for some reason
     planeNode.appendChild(nameSpan);
     planeNode.appendChild(vectorsNode);
     planeNode.appendChild(deleteNode);
@@ -523,11 +524,10 @@ newPlaneButton.addEventListener("click", function() {
     createPlane(vector1Name, vector2Name, planeName);
 })
 
+// Some default vectors for testing
 scene.add(createVector("v", [1, 2, 1]));
 scene.add(createVector("u", [4, 0, -3]));
 scene.add(createVector("w", [1, -1, 3]));
-
-//createPlane("v", "u", "P");
 
 const selectType = document.getElementById("typeSelect");
 
@@ -572,19 +572,18 @@ zoomOut.addEventListener('click', function () {
     camera.position.z *= 1.1;
 })
 
-function animate() {
-    controls.update();
+function updateShadows () {
     for (let i = 0; i < SHADOW_DISTANCE; i++){
         const extraRotation = new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(0, 0, 0));
         const relativePosition = camera.position.clone().normalize();
-        //const eulerAngle = new THREE.Euler();
-        //extraRotation.multiply(camera.matrix)
         const cameraMatrix = new THREE.Matrix4().copy(camera.matrix);
         cameraMatrix.multiply(extraRotation);
-        //const rotation = new THREE.Matrix4().makeRotationFromEuler(eulerAngle);
         shadowMeshes[i].setRotationFromMatrix(cameraMatrix);
         shadowMeshes[i].position.copy(relativePosition.multiplyScalar((i-50)*0.1*Math.sqrt(3)));
     }
+}
+
+function updateVectors () {
     for (const key in vectors) {
         if (vectors.hasOwnProperty(key)) {
             const vectorObj = vectors[key];
@@ -599,6 +598,9 @@ function animate() {
             label.needsUpdate = true;
         }
     }
+}
+
+function drawScale () {
     const scale = r/zoomFactor;
     let squareSizeMax = scale/4;
     const largestPower = Math.pow(10, Math.floor(Math.log10(squareSizeMax)));
@@ -612,6 +614,7 @@ function animate() {
     if (largestPower*5 <= squareSizeMax){
         squareSize = largestPower*5;
     }
+
     const squares = Math.floor(scale/squareSize);
 
     scene.remove(gridXZ);
@@ -628,10 +631,12 @@ function animate() {
     const newYZ = new THREE.GridHelper(2*r*squares*squareSize/scale, squares*2, 0xFFFFFF, 0x236B8E );
     newXY.rotation.x = Math.PI/2;
     newYZ.rotation.z = Math.PI/2;
-    const gridPositions = [];
+    gridPositions.length = 0;
     gridPositions.push(newXZ.geometry.attributes.position.array);
     gridPositions.push(newXY.geometry.attributes.position.array);
     gridPositions.push(newYZ.geometry.attributes.position.array);
+
+    // Extend the grid lines to the edges of the plane
     for (let j = 0; j < 3; j++){
         for (let i = 0; i < gridPositions[0].length; i+= 12) {
             gridPositions[j][i] = -r;
@@ -640,6 +645,8 @@ function animate() {
             gridPositions[j][i+11] = r;
         }
     }
+
+    // Remove the old scale labels
     const axes = [xAxis, yAxis, zAxis];
     for (let i = 0; i < axes.length; i++){
         for (let j = 0; j < axes[i].children.length; j++){
@@ -652,55 +659,35 @@ function animate() {
         }
     }
     
+    // Redraw the scale labels and the coordinate planes with the current zoom factor
     for (let i = -Math.floor(squares/2)*2; i <= squares; i += 2) {
         if (i != 0){
-            let scaleLabelDiv = document.createElement( 'div' );
-            scaleLabelDiv.className = 'scaleLabel';
-            if (Math.abs(i*squareSize) < 1){
-                scaleLabelDiv.textContent = (i*squareSize).toPrecision(1);
-            }
-            else {
-                scaleLabelDiv.textContent = i*squareSize;
-            }
-            scaleLabelDiv.style.color = '#FFFFFF';
-            scaleLabelDiv.style.backgroundColor = 'transparent';
+            const axes = [xAxis, yAxis, zAxis];
+            const labelPos = squareSize*i*zoomFactor;
 
-            let scaleLabel = new CSS2DObject( scaleLabelDiv );
-            scaleLabel.position.set(squareSize*i*zoomFactor, 0, 0);
-            scaleLabel.center.set( 1, 1 );
-            xAxis.add( scaleLabel );
+            for (let j = 0; j < 3; j++) {
+                let scaleLabelDiv = document.createElement( 'div' );
+                scaleLabelDiv.className = 'scaleLabel';
+                if (Math.abs(i*squareSize) < 1){
+                    scaleLabelDiv.textContent = (i*squareSize).toPrecision(1);
+                }
+                else {
+                    scaleLabelDiv.textContent = i*squareSize;
+                }
+                scaleLabelDiv.style.color = '#FFFFFF';
+                scaleLabelDiv.style.backgroundColor = 'transparent';
 
-            scaleLabelDiv = document.createElement( 'div' );
-            scaleLabelDiv.className = 'scaleLabel';
-            if (Math.abs(i*squareSize) < 1){
-                scaleLabelDiv.textContent = (i*squareSize).toPrecision(1);
+                let scaleLabel = new CSS2DObject( scaleLabelDiv );
+                if (j == 0) {
+                    scaleLabel.position.set(labelPos, 0, 0);
+                } else if (j == 1) {
+                    scaleLabel.position.set(0, labelPos, 0);
+                } else {
+                    scaleLabel.position.set(0, 0, labelPos);
+                }
+                scaleLabel.center.set( 1, 1 );
+                axes[j].add( scaleLabel );
             }
-            else {
-                scaleLabelDiv.textContent = i*squareSize;
-            }
-            scaleLabelDiv.style.color = '#FFFFFF';
-            scaleLabelDiv.style.backgroundColor = 'transparent';
-
-            scaleLabel = new CSS2DObject( scaleLabelDiv );
-            scaleLabel.position.set(0, squareSize*i*zoomFactor, 0);
-            scaleLabel.center.set(-0.1, 1 );
-            yAxis.add( scaleLabel );
-
-            scaleLabelDiv = document.createElement( 'div' );
-            scaleLabelDiv.className = 'scaleLabel';
-            if (Math.abs(i*squareSize) < 1){
-                scaleLabelDiv.textContent = (i*squareSize).toPrecision(1);
-            }
-            else {
-                scaleLabelDiv.textContent = i*squareSize;
-            }
-            scaleLabelDiv.style.color = '#FFFFFF';
-            scaleLabelDiv.style.backgroundColor = 'transparent';
-
-            scaleLabel = new CSS2DObject( scaleLabelDiv );
-            scaleLabel.position.set(0, 0, squareSize*i*zoomFactor);
-            scaleLabel.center.set( 1, 1 );
-            zAxis.add( scaleLabel );
         }
     }
 
@@ -711,8 +698,19 @@ function animate() {
     gridXZ = newXZ;
     gridXY = newXY;
     gridYZ = newYZ;
+}
+
+function animate() {
+    controls.update();
+
+    updateShadows();
+
+    updateVectors();
+    
+    drawScale();
 
     renderer.render( scene, camera );
     textRenderer.render( scene, camera );
 }
+
 renderer.setAnimationLoop( animate );
