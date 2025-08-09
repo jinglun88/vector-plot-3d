@@ -270,8 +270,6 @@ function createVector(name, coords) {
     vectorLabel.center.set( 1, 1 );
     vector.add( vectorLabel );
 
-    //console.log(vector.geometry.attributes.position.array);
-
     const vectorNode = document.createElement("div");
     const nameSpan = document.createElement("span");
     const nameNode = document.createTextNode(name + " ");
@@ -329,14 +327,6 @@ function crossProduct(v1, v2) {
     return result;
 }
 
-function magnitude(v) {
-    return Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
-}
-
-function dot(v1, v2) {
-    return (v1[0]*v2[0] + v1[1] + v2[1] + v1[2] * v2[2]);
-}
-
 const planes = {};
 
 class Plane3D {
@@ -349,8 +339,10 @@ class Plane3D {
 }
 
 function createPlane(vecName1, vecName2, name) {
+    // need to refactor this at some point it's horrible
     const vec1 = vectors[vecName1].vector;
     const vec2 = vectors[vecName2].vector;
+    console.log(vec1);
     const u1 = vec1.geometry.attributes.position.array;
     const v1 = vec2.geometry.attributes.position.array;
     const ua = [u1[3], u1[4], u1[5]];
@@ -362,24 +354,11 @@ function createPlane(vecName1, vecName2, name) {
     const normalVec = new THREE.Vector3(normal[0], normal[1], normal[2]);
 
     const plane = new THREE.Plane(normalVec.normalize());
-    const edges = [];
-    edges.push(new THREE.Line3(new THREE.Vector3(-r, -r, -r), new THREE.Vector3(-r, -r, r)));
-    edges.push(new THREE.Line3(new THREE.Vector3(-r, -r, -r), new THREE.Vector3(-r, r, -r)));
-    edges.push(new THREE.Line3(new THREE.Vector3(-r, -r, -r), new THREE.Vector3(r, -r, -r)));
-    edges.push(new THREE.Line3(new THREE.Vector3(-r, r, r), new THREE.Vector3(-r, r, -r)));
-    edges.push(new THREE.Line3(new THREE.Vector3(-r, r, r), new THREE.Vector3(r, r, r)));
-    edges.push(new THREE.Line3(new THREE.Vector3(-r, r, r), new THREE.Vector3(-r, -r, r)));
-    edges.push(new THREE.Line3(new THREE.Vector3(r, r, -r), new THREE.Vector3(-r, r, -r)));
-    edges.push(new THREE.Line3(new THREE.Vector3(r, r, -r), new THREE.Vector3(r, -r, -r)));
-    edges.push(new THREE.Line3(new THREE.Vector3(r, r, -r), new THREE.Vector3(r, r, r)));
-    edges.push(new THREE.Line3(new THREE.Vector3(r, -r, r), new THREE.Vector3(-r, -r, r)));
-    edges.push(new THREE.Line3(new THREE.Vector3(r, -r, r), new THREE.Vector3(r, r, r)));
-    edges.push(new THREE.Line3(new THREE.Vector3(r, -r, r), new THREE.Vector3(r, -r, -r)));
     
     const intersectionsUnfiltered = [];
-    for (let i = 0; i < edges.length; i++) {
+    for (let i = 0; i < cubeEdges.length; i++) {
         const poi = new THREE.Vector3();
-        const intersection = plane.intersectLine(edges[i], poi);
+        const intersection = plane.intersectLine(cubeEdges[i], poi);
         if (intersection != null){
             if (Math.abs(poi.x) <= r && Math.abs(poi.y) <= r && Math.abs(poi.z) <= r) {
                 intersectionsUnfiltered.push(poi);
@@ -401,9 +380,6 @@ function createPlane(vecName1, vecName2, name) {
             intersections.push(i1);
         }
     }
-    for (let i = 0; i < intersections.length; i++){
-        console.log([intersections[i].x, intersections[i].y, intersections[i].z]);
-    }
     let temp;
     for (let i = 0; i < intersections.length; i++){
         for (let j = i + 1; j < intersections.length; j++){
@@ -414,9 +390,6 @@ function createPlane(vecName1, vecName2, name) {
                 break;
             }
         }
-    }
-    for (let i = 0; i < intersections.length; i++){
-        console.log([intersections[i].x, intersections[i].y, intersections[i].z]);
     }
 
     const vOrtho = new THREE.Vector3().crossVectors(u, plane.normal).normalize();
@@ -440,8 +413,6 @@ function createPlane(vecName1, vecName2, name) {
     mesh.renderOrder = 1;
     scene.add(mesh);
     scene.add(edgeLines);
-
-    console.log(mesh)
 
     const planeNode = document.createElement("div");
     const nameSpan = document.createElement("span");
@@ -476,10 +447,10 @@ function createPlane(vecName1, vecName2, name) {
     })
 }
 
+// Used to sort the vertices of planes so they are in the correct order to form the shape geometry
+// If two vertices are on the same face then they will share an x, y, or z coordinate of r
 function checkSharedFace(p1, p2) {
-    console.log([[p1.x, p1.y, p1.z], [p2.x, p2.y, p2.z]]);
-    console.log((p1.x == p2.x && Math.abs(p1.x) == 5) || (p1.y == p2.y && Math.abs(p1.y) == 5) || (p1.z == p2.z && Math.abs(p1.z) == 5));
-    return ((p1.x == p2.x && Math.abs(p1.x) == 5) || (p1.y == p2.y && Math.abs(p1.y) == 5) || (p1.z == p2.z && Math.abs(p1.z) == 5));
+    return ((p1.x == p2.x && Math.abs(p1.x) == r) || (p1.y == p2.y && Math.abs(p1.y) == r) || (p1.z == p2.z && Math.abs(p1.z) == r));
 }
 
 const nameField = document.getElementById("vectorName");
@@ -535,7 +506,6 @@ const vectorBuilder = document.getElementById("vectorBuilder");
 const planeBuilder = document.getElementById("planeBuilder");
 
 selectType.addEventListener('change', function() {
-    console.log("EEEEEEEEEEEE")
     const selected = selectType.value;
     if (selected == "vector"){
         vectorBuilder.style.display = "block";
@@ -554,7 +524,6 @@ document.addEventListener("wheel", function (event) {
     else {
         zoomFactor *= (1/1.1);
     }
-    console.log(event.deltaY);
 })
 
 const zoomIn = document.getElementById("zoomIn");
@@ -601,6 +570,7 @@ function updateVectors () {
 }
 
 function drawScale () {
+    // Calculate the size of the grid squares for the new scale
     const scale = r/zoomFactor;
     let squareSizeMax = scale/4;
     const largestPower = Math.pow(10, Math.floor(Math.log10(squareSizeMax)));
@@ -617,15 +587,13 @@ function drawScale () {
 
     const squares = Math.floor(scale/squareSize);
 
-    scene.remove(gridXZ);
-    scene.remove(gridXY);
-    scene.remove(gridYZ);
-    gridXZ.geometry.dispose();
-    gridXZ.material.dispose();
-    gridXY.geometry.dispose();
-    gridXY.material.dispose();
-    gridYZ.geometry.dispose();
-    gridYZ.material.dispose();
+    // Remove old grids and generate new grids
+    const grids = [gridXZ, gridXY, gridYZ];
+    for (let i = 0; i < 3; i++) {
+        scene.remove(grids[i]);
+        grids[i].material.dispose();
+        grids[i].geometry.dispose();
+    }
     const newXZ = new THREE.GridHelper(2*r*squares*squareSize/scale, squares*2, 0xFFFFFF, 0x236B8E );
     const newXY = new THREE.GridHelper(2*r*squares*squareSize/scale, squares*2, 0xFFFFFF, 0x236B8E );
     const newYZ = new THREE.GridHelper(2*r*squares*squareSize/scale, squares*2, 0xFFFFFF, 0x236B8E );
@@ -636,7 +604,7 @@ function drawScale () {
     gridPositions.push(newXY.geometry.attributes.position.array);
     gridPositions.push(newYZ.geometry.attributes.position.array);
 
-    // Extend the grid lines to the edges of the plane
+    // Extend the grid lines to the edges of the plane (looks better visually)
     for (let j = 0; j < 3; j++){
         for (let i = 0; i < gridPositions[0].length; i+= 12) {
             gridPositions[j][i] = -r;
@@ -650,8 +618,6 @@ function drawScale () {
     const axes = [xAxis, yAxis, zAxis];
     for (let i = 0; i < axes.length; i++){
         for (let j = 0; j < axes[i].children.length; j++){
-            console.log(axes[i].children[j].element.className);
-            console.log(axes[i].children[j].element.className == 'scaleLabel');
             if (axes[i].children[j].element.className == 'scaleLabel') {
                 scene.remove(axes[i].children[j]);
                 axes[i].children[j].removeFromParent();
@@ -690,7 +656,6 @@ function drawScale () {
             }
         }
     }
-
 
     scene.add(newXZ);
     scene.add(newXY);
