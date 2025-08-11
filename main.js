@@ -238,8 +238,8 @@ const vectors = {};
 
 class Vector3D {
     constructor(vector, element, x, y, z) {
-        this.vector = vector;
-        this.element = element;
+        this.vector = vector; // Actually a THREE.line
+        this.element = element; // DOM element
         this.x = x;
         this.y = y;
         this.z = z;
@@ -333,8 +333,8 @@ class Plane3D {
     constructor(plane, edges, orthoBasis, element, name) {
         this.plane = plane;
         this.edges = edges;
-        this.orthoBasis = orthoBasis;
-        this.element = element;
+        this.orthoBasis = orthoBasis; // Orthonormal basis
+        this.element = element; // DOM element
     }
 }
 
@@ -342,16 +342,12 @@ function createPlane(vecName1, vecName2, name) {
     // need to refactor this at some point it's horrible
     const vec1 = vectors[vecName1].vector;
     const vec2 = vectors[vecName2].vector;
-    console.log(vec1);
-    const u1 = vec1.geometry.attributes.position.array;
-    const v1 = vec2.geometry.attributes.position.array;
-    const ua = [u1[3], u1[4], u1[5]];
-    const va = [v1[3], v1[4], v1[5]];
-    const u = new THREE.Vector3(u1[3], u1[4], u1[5]);
-    const v = new THREE.Vector3(v1[3], v1[4], v1[5]);
+    const uPos = vec1.geometry.attributes.position;
+    const vPos = vec2.geometry.attributes.position;
+    const u = new THREE.Vector3(uPos.getX(1), uPos.getY(1), uPos.getZ(1));
+    const v = new THREE.Vector3(vPos.getX(1), vPos.getY(1), vPos.getZ(1));
     
-    const normal = crossProduct(ua, va);
-    const normalVec = new THREE.Vector3(normal[0], normal[1], normal[2]);
+    const normalVec = new THREE.Vector3().crossVectors(u, v);
 
     const plane = new THREE.Plane(normalVec.normalize());
     
