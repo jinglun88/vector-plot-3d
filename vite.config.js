@@ -1,5 +1,5 @@
-import { defineConfig } from "vite"
+import { defineConfig } from "vite";
 
 export default defineConfig({
-    base: "/vector-plot-3d/"
-})
+    base: '/vector-plot-3d/',
+});
