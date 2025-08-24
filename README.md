@@ -1,8 +1,8 @@
 # :mortar_board: 3D Vector Plot
-This is a three-dimensional graphing tool for vectors as well as vector-adjacent concepts in linear algebra. I created this primarily as a visualization tool for myself and as a fun project, but I hope you find it interesting and/or useful as well!
+This is a web-based three-dimensional graphing tool for vectors as well as vector-adjacent concepts in linear algebra. I created this primarily as a visualization tool for myself and as a fun project, but I hope you find it interesting and/or useful as well!
 
 ## :arrow_forward: Try It!
-3D Vector Plot will be deployed on GitHub Pages soon
+3D Vector Plot is currently deployed on GitHub Pages! Check it out [here](https://jinglun88.github.io/vector-plot-3d/) 🔗
 
 ## :mag: Example
 <img width="3449" height="1819" alt="image" src="https://github.com/user-attachments/assets/909d4767-d365-45b2-bc68-1471dec94fa7" />
