@@ -463,13 +463,13 @@ newVectorButton.addEventListener("click", function() {
     const xCoord = parseInt(xField.value);
     const yCoord = parseInt(yField.value);
     const zCoord = parseInt(zField.value);
+    if (isNaN(xCoord) || isNaN(yCoord) || isNaN(zCoord)){
+        return;
+    }
     nameField.value = "";
     xField.value = "";
     yField.value = "";
     zField.value = "";
-    if (isNaN(xCoord) || isNaN(yCoord) || isNaN(zCoord)){
-        return;
-    }
     scene.add(createVector(vectorName, [xCoord, yCoord, zCoord]));
 })
 
