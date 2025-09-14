@@ -196,6 +196,7 @@ canvas {
     display: none;
     padding-left: 3px;
 }
+
 select {
     font-family: "lmroman10", serif;
     color: white;
@@ -207,6 +208,10 @@ select {
     height: 25px;
     width: 80px;
     padding-left: 3px;
+}
+
+#typeSelect {
+    width: 110px;
 }
 
 .vectorOption {

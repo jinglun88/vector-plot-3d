@@ -250,6 +250,8 @@ const vectorList = document.getElementById("vectorList");
 
 const planeList = document.getElementById("planeList");
 
+const projList = document.getElementById("projList");
+
 function createVector(name, coords) {
     const vectorArr = [];
     vectorArr.push( new THREE.Vector3(0, 0, 0) );
@@ -330,6 +332,7 @@ class Plane3D {
         this.edges = edges;
         this.orthoBasis = orthoBasis; // Orthonormal basis
         this.element = element; // DOM element
+        this.name = name;
     }
 }
 
@@ -443,6 +446,17 @@ function checkSharedFace(p1, p2) {
     return ((p1.x == p2.x && Math.abs(p1.x) == r) || (p1.y == p2.y && Math.abs(p1.y) == r) || (p1.z == p2.z && Math.abs(p1.z) == r));
 }
 
+const projections = {};
+
+class projection3D {
+    constructor(vector, projected, onto, element) {
+        this.vector = vector; // Actually a THREE.line
+        this.projected = projected;
+        this.onto = onto;
+        this.element = element; // DOM element
+    }
+}
+
 const nameField = document.getElementById("vectorName");
 const xField = document.getElementById("vectorX");
 const yField = document.getElementById("vectorY");
@@ -463,9 +477,9 @@ newVectorButton.addEventListener("click", function() {
         vectorErrorMessage.style.display = "block";
         return;
     }
-    const xCoord = parseInt(xField.value);
-    const yCoord = parseInt(yField.value);
-    const zCoord = parseInt(zField.value);
+    const xCoord = parseFloat(xField.value);
+    const yCoord = parseFloat(yField.value);
+    const zCoord = parseFloat(zField.value);
     if (isNaN(xCoord) || isNaN(yCoord) || isNaN(zCoord)){
         vectorErrorMessage.innerHTML = "Error: Each coordinate must be a number.";
         vectorErrorMessage.style.display = "block";
@@ -557,16 +571,24 @@ const selectType = document.getElementById("typeSelect");
 
 const vectorBuilder = document.getElementById("vectorBuilder");
 const planeBuilder = document.getElementById("planeBuilder");
+const projBuilder = document.getElementById("projBuilder")
 
 selectType.addEventListener('change', function() {
     const selected = selectType.value;
     if (selected == "vector"){
         vectorBuilder.style.display = "block";
         planeBuilder.style.display = "none";
+        projBuilder.style.display = "none";
     }
-    else{
+    else if (selected == "plane") {
         vectorBuilder.style.display = "none";
         planeBuilder.style.display = "block";
+        projBuilder.style.display = "none";
+    }
+    else {
+        vectorBuilder.style.display = "none";
+        planeBuilder.style.display = "none";
+        projBuilder.style.display = "block";
     }
 })
 

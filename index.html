@@ -22,6 +22,7 @@
         <div class="guiSectionHeader">New <select id="typeSelect">
             <option value="vector">Vector</option>
             <option value="plane">Plane</option>
+            <option value="plane">Projection</option>
           </select>
         </div>
         <div id="vectorBuilder">
@@ -47,12 +48,29 @@
           <button id="newPlaneButton">+</button>
           <span class = "errorMessage" id = "planeError">Name cannot be blank.</span>
         </div>
+        <div id="projBuilder">
+          <span id = "projInputs">
+          <input type="text" id="projName" placeholder="Name">
+          <br>
+          <select id="vector1Name" placeholder="Vector 1" class = "vectorOption">
+            <option value = "">x</option>
+          </select>
+          <select id="vector2Name" placeholder="Vector 2" class = "vectorOption">
+            <option value = "">y</option>
+          </select>
+          </span>
+          <button id="newProjButton">+</button>
+          <span class = "errorMessage" id = "proj">Name cannot be blank.</span>
+        </div>
       </div>
       <div class="guiSection" id="vectorList">
         <div class="guiSectionHeader">Vectors</div>
       </div>
       <div class="guiSection" id="planeList">
         <div class="guiSectionHeader">Planes</div>
+      </div>
+      <div class="guiSection" id="projList">
+        <div class="guiSectionHeader">Projections</div>
       </div>
     </div>
   </div>
