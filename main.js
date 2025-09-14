@@ -322,11 +322,6 @@ function createVector(name, coords) {
     return vector;
 }
 
-function crossProduct(v1, v2) {
-    const result = [v1[1]*v2[2]-v2[1]*v1[2], -v1[0]*v2[2]+v2[0]*v1[2], v1[0]*v2[1]-v2[0]*v1[1]];
-    return result;
-}
-
 const planes = {};
 
 class Plane3D {
@@ -339,7 +334,6 @@ class Plane3D {
 }
 
 function createPlane(vecName1, vecName2, name) {
-    // need to refactor this at some point it's horrible
     const vec1 = vectors[vecName1].vector;
     const vec2 = vectors[vecName2].vector;
     const uPos = vec1.geometry.attributes.position;
@@ -455,21 +449,33 @@ const yField = document.getElementById("vectorY");
 const zField = document.getElementById("vectorZ");
 const newVectorButton = document.getElementById("newVectorButton");
 
+const vectorErrorMessage = document.getElementById("vectorError");
+
 newVectorButton.addEventListener("click", function() {
     const vectorName = nameField.value;
+    if (vectorName == "") {
+        vectorErrorMessage.innerHTML = "Error: Name cannot be blank.";
+        vectorErrorMessage.style.display = "block";
+        return;
+    }
     if (vectors.hasOwnProperty(vectorName)) {
+        vectorErrorMessage.innerHTML = "Error: Vector names must be unique.";
+        vectorErrorMessage.style.display = "block";
         return;
     }
     const xCoord = parseInt(xField.value);
     const yCoord = parseInt(yField.value);
     const zCoord = parseInt(zField.value);
     if (isNaN(xCoord) || isNaN(yCoord) || isNaN(zCoord)){
+        vectorErrorMessage.innerHTML = "Error: Each coordinate must be a number.";
+        vectorErrorMessage.style.display = "block";
         return;
     }
     nameField.value = "";
     xField.value = "";
     yField.value = "";
     zField.value = "";
+    vectorErrorMessage.style.display = "none";
     scene.add(createVector(vectorName, [xCoord, yCoord, zCoord]));
 })
 
@@ -478,16 +484,67 @@ const planeVector2Field = document.getElementById("vector2Name");
 const planeNameField = document.getElementById("planeName");
 const newPlaneButton = document.getElementById("newPlaneButton");
 
+const planeErrorMessage = document.getElementById("planeError");
+
 newPlaneButton.addEventListener("click", function() {
     const planeName = planeNameField.value;
+    if (planeName == ""){
+        planeErrorMessage.innerHTML = "Error: Name cannot be blank.";
+        planeErrorMessage.style.display = "block";
+        return;
+    }
     if (planes.hasOwnProperty(planeName)) {
+        planeErrorMessage.innerHTML = "Error: Plane names must be unique.";
+        planeErrorMessage.style.display = "block";
         return;
     }
     const vector1Name = planeVector1Field.value;
     const vector2Name = planeVector2Field.value;
+    if (vector1Name == vector2Name){
+        planeErrorMessage.innerHTML = "Error: Choose two different vectors.";
+        planeErrorMessage.style.display = "block";
+        return;
+    }
+    const vec1 = vectors[vector1Name].vector;
+    const vec2 = vectors[vector2Name].vector;
+    const uPos = vec1.geometry.attributes.position;
+    const vPos = vec2.geometry.attributes.position;
+    const uArr = [uPos.getX(1), uPos.getY(1), uPos.getZ(1)];
+    const vArr = [vPos.getX(1), vPos.getY(1), vPos.getZ(1)];
+    let lin_dep = true;
+    let c;
+    for (let i = 0; i < 3; i ++) {
+        console.log("u[" + i + "]: " + uArr[i] + " v[" + i + "]: " + vArr[i]);
+        if (vArr[i] == 0) {
+            if (uArr[i] != 0) {
+                lin_dep = false;
+            }
+        } else {
+            if (uArr[i] == 0) {
+                lin_dep = false;
+            }
+            if (typeof c == "undefined") {
+                c = uArr[i] / vArr[i];
+            } else {
+                console.log(c);
+                if (uArr[i] / vArr[i] != c) {
+                    lin_dep = false;
+                }
+            }
+        }
+    }
+    if ((uArr[0] == 0 && uArr[1] == 0 && uArr[2] == 0) || (vArr[0] == 0 && vArr[1] == 0 && vArr[2] == 0)) {
+        lin_dep = true;
+    }
+    if (lin_dep) {
+        planeErrorMessage.innerHTML = "Error: Vectors are linearly dependent.";
+        planeErrorMessage.style.display = "block";
+        return;
+    }
     planeVector1Field.value = "";
     planeVector2Field.value = "";
     planeNameField.value = "";
+    planeErrorMessage.style.display = "none";
     createPlane(vector1Name, vector2Name, planeName);
 })
 

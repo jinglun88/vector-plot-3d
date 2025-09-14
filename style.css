@@ -215,6 +215,12 @@ select {
     height: 30px;
 }
 
+.errorMessage {
+    display: none;
+    padding: 5px;
+    color: white;
+}
+
 #newPlaneButton {
     position: relative;
     height: 30px;
