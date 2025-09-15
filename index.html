@@ -22,7 +22,7 @@
         <div class="guiSectionHeader">New <select id="typeSelect">
             <option value="vector">Vector</option>
             <option value="plane">Plane</option>
-            <option value="plane">Projection</option>
+            <option value="projection">Projection</option>
           </select>
         </div>
         <div id="vectorBuilder">
@@ -51,11 +51,11 @@
         <div id="projBuilder">
           <span id = "projInputs">
           <input type="text" id="projName" placeholder="Name">
-          <br>
-          <select id="vector1Name" placeholder="Vector 1" class = "vectorOption">
+          <br>Project:
+          <select id="projected" placeholder="Vector 1" class = "vectorOption">
             <option value = "">x</option>
-          </select>
-          <select id="vector2Name" placeholder="Vector 2" class = "vectorOption">
+          </select><br>onto:
+          <select id="onto" placeholder="Vector 2" class = "vectorOption">
             <option value = "">y</option>
           </select>
           </span>

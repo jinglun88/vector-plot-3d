@@ -197,6 +197,11 @@ canvas {
     padding-left: 3px;
 }
 
+#projBuilder {
+    display: none;
+    padding-left: 3px;
+}
+
 select {
     font-family: "lmroman10", serif;
     color: white;

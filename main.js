@@ -448,13 +448,89 @@ function checkSharedFace(p1, p2) {
 
 const projections = {};
 
-class projection3D {
+class Projection3D {
     constructor(vector, projected, onto, element) {
         this.vector = vector; // Actually a THREE.line
         this.projected = projected;
         this.onto = onto;
         this.element = element; // DOM element
     }
+}
+
+function extractVector3(vecName) {
+    const vector = vectors[vecName].vector;
+    const vecPos = vector.geometry.attributes.position;
+    return new THREE.Vector3(vecPos.getX(1), vecPos.getY(1), vecPos.getZ(1));
+}
+
+const projElem1Field = document.getElementById("projected");
+const projElem2Field = document.getElementById("onto");
+const projNameField = document.getElementById("projName");
+const newProjButton = document.getElementById("newProjButton");
+
+function createProjection(projectedVec, onto, name) {
+    name = name;
+    // const projectedVecLine = vectors[u].vector; // This is a THREE.line
+    // const uPos = projectedVecLine.geometry.attributes.position; // Position of the THREE.line
+    // const projected = new THREE.Vector3(uPos.getX(1), uPos.getY(1), uPos.getZ(1)); // Vector3 of the line
+    let v = [];
+    const projected = extractVector3(projectedVec);
+    if (vectors.hasOwnProperty(onto)) {
+        v.push(extractVector3(onto));
+    }
+    else if (planes.hasOwnProperty(onto)) {
+        const basis = planes[onto].orthoBasis[0];
+        v.push(basis[0], basis[1]);
+    }
+    const projection = new THREE.Vector3(0, 0, 0);
+    for (let i = 0; i < v.length; i ++) {
+        const component = new THREE.Vector3();
+        component.copy(projected);
+        component.projectOnVector(v[i]);
+        projection.add(component);
+    }
+
+    const projectionArr = [];
+    projectionArr.push( new THREE.Vector3(0, 0, 0) );
+    projectionArr.push( projection );
+
+    const projectionGeometry = new THREE.BufferGeometry().setFromPoints( vectorArr );
+    const projectionVector = new THREE.Line( vectorGeometry, yellowMaterial );
+
+    const projectionDiv = document.createElement( 'div' );
+    projectionDiv.className = 'label';
+    projectionDiv.textContent = name;
+    projectionDiv.style.color = '#FFFFFF';
+    projectionDiv.style.backgroundColor = 'transparent';
+    projectionDiv.appendChild(document.createTextNode(String.fromCodePoint(8407)));
+
+    const projectionLabel = new CSS2DObject( projectionDiv );
+    projectionLabel.position.set(projection.x, projection.y, projection.z);
+    projectionLabel.center.set( 1, 1 );
+    projectionVector.add( vectorLabel );
+
+    const projectionNode = document.createElement("div");
+    const nameSpan = document.createElement("span");
+    const nameNode = document.createTextNode(name + ": ");
+    const vectorsNode = document.createTextNode("Proj(" + projected + ", " + onto + ")");
+    const deleteNode = document.createElement("button");
+
+    nameSpan.className = "projectionName"
+    deleteNode.className = "projectionDeleteButton"
+    projectionNode.className = "projectionInfo"
+
+    nameSpan.appendChild(nameNode);
+    nameSpan.appendChild(document.createTextNode(String.fromCodePoint(8407))); // arrow doesn't display for some reason
+    projectionNode.appendChild(nameSpan);
+    projectionNode.appendChild(vectorsNode);
+    projectionNode.appendChild(deleteNode);
+    planeList.appendChild(projectionNode);
+
+    const projectionObject = new Projection3D(projectionVector, projectedVec, onto, projectionNode);
+
+    projections[name] = projectionObject;
+
+    scene.add(projectionVector);
 }
 
 const nameField = document.getElementById("vectorName");
@@ -472,7 +548,7 @@ newVectorButton.addEventListener("click", function() {
         vectorErrorMessage.style.display = "block";
         return;
     }
-    if (vectors.hasOwnProperty(vectorName)) {
+    if (vectors.hasOwnProperty(vectorName) || planes.hasOwnProperty(vectorName)) {
         vectorErrorMessage.innerHTML = "Error: Vector names must be unique.";
         vectorErrorMessage.style.display = "block";
         return;
@@ -507,7 +583,7 @@ newPlaneButton.addEventListener("click", function() {
         planeErrorMessage.style.display = "block";
         return;
     }
-    if (planes.hasOwnProperty(planeName)) {
+    if (planes.hasOwnProperty(planeName) || vectors.hasOwnProperty(planeName)) {
         planeErrorMessage.innerHTML = "Error: Plane names must be unique.";
         planeErrorMessage.style.display = "block";
         return;
@@ -528,7 +604,6 @@ newPlaneButton.addEventListener("click", function() {
     let lin_dep = true;
     let c;
     for (let i = 0; i < 3; i ++) {
-        console.log("u[" + i + "]: " + uArr[i] + " v[" + i + "]: " + vArr[i]);
         if (vArr[i] == 0) {
             if (uArr[i] != 0) {
                 lin_dep = false;
@@ -540,7 +615,6 @@ newPlaneButton.addEventListener("click", function() {
             if (typeof c == "undefined") {
                 c = uArr[i] / vArr[i];
             } else {
-                console.log(c);
                 if (uArr[i] / vArr[i] != c) {
                     lin_dep = false;
                 }
