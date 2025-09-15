@@ -38,6 +38,7 @@ const realBlueMateral = new THREE.LineBasicMaterial( {color: 0x236B8E } );
 const edgeMaterial = new THREE.LineBasicMaterial( {color: 0xABDBE3, transparent: true, opacity: 0.8 });
 
 const yellowMaterial = new THREE.LineBasicMaterial( {color: 0xFFFF00 } );
+const purpleMaterial = new THREE.LineBasicMaterial( {color: 0xFF00FF } );
 
 const bluePlaneMaterial = new THREE.MeshBasicMaterial( {color: 0x8888FF, side: THREE.DoubleSide, transparent: true, opacity: 0.3 } );
 const CoordinatePlaneMaterial = new THREE.MeshBasicMaterial( {color: 0x000000, side: THREE.DoubleSide, transparent: true, opacity: 0 });
@@ -300,8 +301,12 @@ function createVector(name, coords) {
     const vectorSelect2 = document.getElementById("vector2Name");
     vectorSelect1.appendChild(vectorOption1);
     vectorSelect2.appendChild(vectorOption2);
-    
 
+    const vectorOption1Proj = vectorOption1.cloneNode(true);
+    const vectorOption2Proj = vectorOption2.cloneNode(true);
+    projElem1Field.appendChild(vectorOption1Proj);
+    projElem2Field.appendChild(vectorOption2Proj);
+    
     deleteNode.addEventListener("click", function() {
         vector.remove(vectorLabel);
         scene.remove(vector);
@@ -327,7 +332,7 @@ function createVector(name, coords) {
 const planes = {};
 
 class Plane3D {
-    constructor(plane, edges, orthoBasis, element, name) {
+    constructor(plane, edges, orthoBasis, element, x, y, z, name) {
         this.plane = plane;
         this.edges = edges;
         this.orthoBasis = orthoBasis; // Orthonormal basis
@@ -424,6 +429,16 @@ function createPlane(vecName1, vecName2, name) {
     planeNode.appendChild(deleteNode);
     planeList.appendChild(planeNode);
 
+    const planeOption1 = document.createElement("option");
+    planeOption1.value = name;
+    const vectorOption1Text = document.createTextNode(name);
+    planeOption1.appendChild(vectorOption1Text);
+    const vectorSelect1 = document.getElementById("vector1Name");
+    const vectorSelect2 = document.getElementById("vector2Name");
+    const planeOption2 = planeOption1.cloneNode(true);
+    projElem1Field.appendChild(planeOption1);
+    projElem2Field.appendChild(planeOption2);
+
     planes[name] = (new Plane3D(mesh, edgeLines, orthogonalBasis, planeNode, name));
 
     deleteNode.addEventListener("click", function() {
@@ -440,6 +455,32 @@ function createPlane(vecName1, vecName2, name) {
     })
 }
 
+const projElem1Field = document.getElementById("projected");
+const projElem2Field = document.getElementById("onto");
+const projNameField = document.getElementById("projName");
+const newProjButton = document.getElementById("newProjButton");
+
+newProjButton.addEventListener("click", function() {
+    const projName = projNameField.value;
+    if (projName == "") {
+        vectorErrorMessage.innerHTML = "Error: Name cannot be blank.";
+        vectorErrorMessage.style.display = "block";
+        return;
+    }
+    if (vectors.hasOwnProperty(vectorName) || planes.hasOwnProperty(vectorName)) {
+        vectorErrorMessage.innerHTML = "Error: Vector names must be unique.";
+        vectorErrorMessage.style.display = "block";
+        return;
+    }
+    const projected = projElem1Field.value;
+    const onto = projElem2Field.value;
+    projNameField.value = "";
+    projElem1Field.value = "";
+    projElem2Field.value = "";
+    vectorErrorMessage.style.display = "none";
+    createProjection(projected, onto, projName);
+})
+
 // Used to sort the vertices of planes so they are in the correct order to form the shape geometry
 // If two vertices are on the same face then they will share an x, y, or z coordinate of r
 function checkSharedFace(p1, p2) {
@@ -449,10 +490,13 @@ function checkSharedFace(p1, p2) {
 const projections = {};
 
 class Projection3D {
-    constructor(vector, projected, onto, element) {
+    constructor(vector, projected, onto, x, y, z, element) {
         this.vector = vector; // Actually a THREE.line
         this.projected = projected;
         this.onto = onto;
+        this.x = x;
+        this.y = y;
+        this.z = z;
         this.element = element; // DOM element
     }
 }
@@ -463,23 +507,23 @@ function extractVector3(vecName) {
     return new THREE.Vector3(vecPos.getX(1), vecPos.getY(1), vecPos.getZ(1));
 }
 
-const projElem1Field = document.getElementById("projected");
-const projElem2Field = document.getElementById("onto");
-const projNameField = document.getElementById("projName");
-const newProjButton = document.getElementById("newProjButton");
+function extractVector3Proj(projName) {
+    const vector = projections[projName].vector;
+    const vecPos = vector.geometry.attributes.position;
+    return new THREE.Vector3(vecPos.getX(1), vecPos.getY(1), vecPos.getZ(1));
+}
 
 function createProjection(projectedVec, onto, name) {
     name = name;
-    // const projectedVecLine = vectors[u].vector; // This is a THREE.line
-    // const uPos = projectedVecLine.geometry.attributes.position; // Position of the THREE.line
-    // const projected = new THREE.Vector3(uPos.getX(1), uPos.getY(1), uPos.getZ(1)); // Vector3 of the line
+    const projectedVector = vectors[projectedVec];
     let v = [];
-    const projected = extractVector3(projectedVec);
+    const projected = new THREE.Vector3( projectedVector.x, projectedVector.y, projectedVector.z );
     if (vectors.hasOwnProperty(onto)) {
-        v.push(extractVector3(onto));
+        const vectorOnto = vectors[onto];
+        v.push(new THREE.Vector3(vectorOnto.x, vectorOnto.y, vectorOnto.z));
     }
     else if (planes.hasOwnProperty(onto)) {
-        const basis = planes[onto].orthoBasis[0];
+        const basis = planes[onto].orthoBasis;
         v.push(basis[0], basis[1]);
     }
     const projection = new THREE.Vector3(0, 0, 0);
@@ -494,8 +538,8 @@ function createProjection(projectedVec, onto, name) {
     projectionArr.push( new THREE.Vector3(0, 0, 0) );
     projectionArr.push( projection );
 
-    const projectionGeometry = new THREE.BufferGeometry().setFromPoints( vectorArr );
-    const projectionVector = new THREE.Line( vectorGeometry, yellowMaterial );
+    const projectionGeometry = new THREE.BufferGeometry().setFromPoints( projectionArr );
+    const projectionVector = new THREE.Line( projectionGeometry, purpleMaterial );
 
     const projectionDiv = document.createElement( 'div' );
     projectionDiv.className = 'label';
@@ -507,7 +551,7 @@ function createProjection(projectedVec, onto, name) {
     const projectionLabel = new CSS2DObject( projectionDiv );
     projectionLabel.position.set(projection.x, projection.y, projection.z);
     projectionLabel.center.set( 1, 1 );
-    projectionVector.add( vectorLabel );
+    projectionVector.add( projectionLabel );
 
     const projectionNode = document.createElement("div");
     const nameSpan = document.createElement("span");
@@ -524,9 +568,9 @@ function createProjection(projectedVec, onto, name) {
     projectionNode.appendChild(nameSpan);
     projectionNode.appendChild(vectorsNode);
     projectionNode.appendChild(deleteNode);
-    planeList.appendChild(projectionNode);
+    projList.appendChild(projectionNode);
 
-    const projectionObject = new Projection3D(projectionVector, projectedVec, onto, projectionNode);
+    const projectionObject = new Projection3D(projectionVector, projectedVec, onto, projection.x, projection.y, projection.z, projectionNode);
 
     projections[name] = projectionObject;
 
@@ -713,6 +757,21 @@ function updateVectors () {
             label.position.x = vectorObj.x*zoomFactor;
             label.position.y = vectorObj.y*zoomFactor;
             label.position.z = vectorObj.z*zoomFactor;
+            label.needsUpdate = true;
+        }
+    }
+
+    for (const key in projections) {
+        if (projections.hasOwnProperty(key)) {
+            const projectionObj = projections[key];
+            const positionReference = projectionObj.vector.geometry.attributes.position;
+            positionReference.setXYZ(1, projectionObj.x*zoomFactor, projectionObj.y*zoomFactor, projectionObj.z*zoomFactor);
+            positionReference.needsUpdate = true;
+
+            const label = projectionObj.vector.children[0];
+            label.position.x = projectionObj.x*zoomFactor;
+            label.position.y = projectionObj.y*zoomFactor;
+            label.position.z = projectionObj.z*zoomFactor;
             label.needsUpdate = true;
         }
     }
