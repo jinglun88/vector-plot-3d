@@ -429,15 +429,13 @@ function createPlane(vecName1, vecName2, name) {
     planeNode.appendChild(deleteNode);
     planeList.appendChild(planeNode);
 
-    const planeOption1 = document.createElement("option");
-    planeOption1.value = name;
-    const vectorOption1Text = document.createTextNode(name);
-    planeOption1.appendChild(vectorOption1Text);
-    const vectorSelect1 = document.getElementById("vector1Name");
-    const vectorSelect2 = document.getElementById("vector2Name");
-    const planeOption2 = planeOption1.cloneNode(true);
-    projElem1Field.appendChild(planeOption1);
-    projElem2Field.appendChild(planeOption2);
+    const planeOption = document.createElement("option");
+    planeOption.value = name;
+    const planeOptionText = document.createTextNode(name);
+    planeOption.appendChild(planeOptionText);
+    //const vectorSelect1 = document.getElementById("vector1Name");
+    //const vectorSelect2 = document.getElementById("vector2Name");
+    projElem2Field.appendChild(planeOption);
 
     planes[name] = (new Plane3D(mesh, edgeLines, orthogonalBasis, planeNode, name));
 
@@ -452,6 +450,8 @@ function createPlane(vecName1, vecName2, name) {
         const parent = deleteNode.parentNode;
         parent.removeChild(deleteNode);
         parent.parentNode.removeChild(parent);
+        planeOption.removeChild(planeOptionText);
+        projElem2Field.removeChild(planeOption);
     })
 }
 
@@ -556,16 +556,27 @@ function createProjection(projectedVec, onto, name) {
     const projectionNode = document.createElement("div");
     const nameSpan = document.createElement("span");
     const nameNode = document.createTextNode(name + ": ");
-    const vectorsNode = document.createTextNode("Proj(" + projected + ", " + onto + ")");
+    const vectorsNode = document.createElement("span");
+    const vectorsNodeSubscript = document.createElement("sub");
+    const vectorsNodeProjText1Wrapper = document.createElement("span");
+    const vectorsNodeProjText1 = document.createTextNode("Proj");
+    const vectorsNodeSubscriptText = document.createTextNode(onto);
+    const vectorsNodeProjText2 = document.createTextNode(projectedVec);
     const deleteNode = document.createElement("button");
 
     nameSpan.className = "projectionName"
     deleteNode.className = "projectionDeleteButton"
     projectionNode.className = "projectionInfo"
+    vectorsNodeProjText1Wrapper.className = "projWord"
 
+    vectorsNodeProjText1Wrapper.appendChild(vectorsNodeProjText1);
     nameSpan.appendChild(nameNode);
     nameSpan.appendChild(document.createTextNode(String.fromCodePoint(8407))); // arrow doesn't display for some reason
     projectionNode.appendChild(nameSpan);
+    vectorsNodeSubscript.appendChild(vectorsNodeSubscriptText);
+    vectorsNode.appendChild(vectorsNodeProjText1Wrapper);
+    vectorsNode.appendChild(vectorsNodeSubscript);
+    vectorsNode.appendChild(vectorsNodeProjText2);
     projectionNode.appendChild(vectorsNode);
     projectionNode.appendChild(deleteNode);
     projList.appendChild(projectionNode);
@@ -575,6 +586,21 @@ function createProjection(projectedVec, onto, name) {
     projections[name] = projectionObject;
 
     scene.add(projectionVector);
+
+    deleteNode.addEventListener("click", function() {
+        projectionVector.remove(projectionLabel);
+        scene.remove(projectionVector);
+        projectionVector.geometry.dispose();
+        projectionVector.material.dispose();
+        delete projections[name];
+        const parent = deleteNode.parentNode;
+        parent.replaceChildren();
+        parent.parentNode.removeChild(parent);
+        vectorOption1.removeChild(vectorOption1Text);
+        vectorOption2.removeChild(vectoroption2Text);
+        vectorSelect1.removeChild(vectorOption1);
+        vectorSelect2.removeChild(vectorOption2);
+    })
 }
 
 const nameField = document.getElementById("vectorName");

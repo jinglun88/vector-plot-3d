@@ -118,6 +118,12 @@ button {
     font-style: italic;
 }
 
+.projectionName {
+    margin-left: 0px;
+    margin-top: 4px;
+    font-style: italic;
+}
+
 #vectorList {
     padding-bottom: 5px;
     font-size: 22px;
@@ -128,11 +134,25 @@ button {
     font-size: 22px;
 }
 
+#projList {
+    padding-bottom: 5px;
+    font-size: 22px;
+}
+
 .planeInfo {
     padding-left: 5px;
 }
 
-.vectorDeleteButton, .planeDeleteButton {
+.projectionInfo {
+    padding-left: 5px;
+    font-style: italic;
+}
+
+.projWord {
+    font-style: normal;
+}
+
+.vectorDeleteButton, .planeDeleteButton, .projectionDeleteButton {
     position: relative;
     top: 5px;
     right: 5px;
