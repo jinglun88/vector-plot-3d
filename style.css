@@ -157,6 +157,9 @@ button {
     top: 5px;
     right: 5px;
     float: right;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .collapsible {

@@ -253,6 +253,18 @@ const planeList = document.getElementById("planeList");
 
 const projList = document.getElementById("projList");
 
+const vectorSelect1 = document.getElementById("vector1Name");
+const vectorSelect2 = document.getElementById("vector2Name");
+
+function addToSelect(menu, name) {
+    const option = document.createElement("option");
+    option.value = name;
+    const optionText = document.createTextNode(name);
+    option.appendChild(optionText);
+    menu.appendChild(option);
+    return option;
+}
+
 function createVector(name, coords) {
     const vectorArr = [];
     vectorArr.push( new THREE.Vector3(0, 0, 0) );
@@ -278,6 +290,13 @@ function createVector(name, coords) {
     const nameNode = document.createTextNode(name + " ");
     const coordsNode = document.createTextNode("[" + coords[0] + "," + coords[1] + "," + coords[2] + "]");
     const deleteNode = document.createElement("button");
+    const deleteIconNode = document.createElement("img");
+    deleteIconNode.src = "/vector-plot-3d/static/trash-2-32.png";
+    deleteIconNode.alt = "X";
+    deleteIconNode.height = 16;
+    deleteIconNode.width = 16;
+    deleteIconNode.className = "deleteImage";
+    deleteNode.appendChild(deleteIconNode);
 
     nameSpan.className = "vectorName"
     deleteNode.className = "vectorDeleteButton"
@@ -289,23 +308,11 @@ function createVector(name, coords) {
     vectorNode.appendChild(deleteNode);
     vectorList.appendChild(vectorNode);
 
-    const vectorOption1 = document.createElement("option");
-    const vectorOption2 = document.createElement("option");
-    vectorOption1.value = name;
-    vectorOption2.value = name;
-    const vectorOption1Text = document.createTextNode(name);
-    const vectoroption2Text = document.createTextNode(name);
-    vectorOption1.appendChild(vectorOption1Text);
-    vectorOption2.appendChild(vectoroption2Text);
-    const vectorSelect1 = document.getElementById("vector1Name");
-    const vectorSelect2 = document.getElementById("vector2Name");
-    vectorSelect1.appendChild(vectorOption1);
-    vectorSelect2.appendChild(vectorOption2);
+    const vectorOption1 = addToSelect(vectorSelect1, name);
+    const vectorOption2 = addToSelect(vectorSelect2, name);
 
-    const vectorOption1Proj = vectorOption1.cloneNode(true);
-    const vectorOption2Proj = vectorOption2.cloneNode(true);
-    projElem1Field.appendChild(vectorOption1Proj);
-    projElem2Field.appendChild(vectorOption2Proj);
+    const vectorOption1Proj = addToSelect(projElem1Field, name);
+    const vectorOption2Proj = addToSelect(projElem2Field, name);
     
     deleteNode.addEventListener("click", function() {
         vector.remove(vectorLabel);
@@ -316,10 +323,14 @@ function createVector(name, coords) {
         const parent = deleteNode.parentNode;
         parent.replaceChildren();
         parent.parentNode.removeChild(parent);
-        vectorOption1.removeChild(vectorOption1Text);
-        vectorOption2.removeChild(vectoroption2Text);
+        vectorOption1.replaceChildren();
+        vectorOption2.replaceChildren();
         vectorSelect1.removeChild(vectorOption1);
         vectorSelect2.removeChild(vectorOption2);
+        vectorOption1Proj.replaceChildren();
+        vectorOption2Proj.replaceChildren();
+        projElem1Field.removeChild(vectorOption1Proj);
+        projElem2Field.removeChild(vectorOption2Proj);
     })
 
     const vectorObject = new Vector3D(vector, vectorNode, coords[0], coords[1], coords[2]);
@@ -342,8 +353,20 @@ class Plane3D {
 }
 
 function createPlane(vecName1, vecName2, name) {
-    const vec1 = vectors[vecName1].vector;
-    const vec2 = vectors[vecName2].vector;
+    let vec1;
+    let vec2;
+    if (vectors.hasOwnProperty(vecName1)) {
+        vec1 = vectors[vecName1].vector;
+    }
+    else if (projections.hasOwnProperty(vecName1)) {
+        vec1 = projections[vecName1].vector;
+    }
+    if (vectors.hasOwnProperty(vecName2)) {
+        vec2 = vectors[vecName2].vector;
+    }
+    else if (projections.hasOwnProperty(vecName2)) {
+        vec2 = projections[vecName2].vector;
+    }
     const uPos = vec1.geometry.attributes.position;
     const vPos = vec2.geometry.attributes.position;
     const u = new THREE.Vector3(uPos.getX(1), uPos.getY(1), uPos.getZ(1));
@@ -417,6 +440,13 @@ function createPlane(vecName1, vecName2, name) {
     const nameNode = document.createTextNode(name + ": ");
     const vectorsNode = document.createTextNode("Span(" + vecName1 + ", " + vecName2 + ")");
     const deleteNode = document.createElement("button");
+    const deleteIconNode = document.createElement("img");
+    deleteIconNode.src = "/vector-plot-3d/static/trash-2-32.png";
+    deleteIconNode.alt = "X";
+    deleteIconNode.height = 16;
+    deleteIconNode.width = 16;
+    deleteIconNode.className = "deleteImage";
+    deleteNode.appendChild(deleteIconNode);
 
     nameSpan.className = "planeName"
     deleteNode.className = "planeDeleteButton"
@@ -429,13 +459,7 @@ function createPlane(vecName1, vecName2, name) {
     planeNode.appendChild(deleteNode);
     planeList.appendChild(planeNode);
 
-    const planeOption = document.createElement("option");
-    planeOption.value = name;
-    const planeOptionText = document.createTextNode(name);
-    planeOption.appendChild(planeOptionText);
-    //const vectorSelect1 = document.getElementById("vector1Name");
-    //const vectorSelect2 = document.getElementById("vector2Name");
-    projElem2Field.appendChild(planeOption);
+    const planeOption = addToSelect(projElem2Field, name);
 
     planes[name] = (new Plane3D(mesh, edgeLines, orthogonalBasis, planeNode, name));
 
@@ -450,7 +474,7 @@ function createPlane(vecName1, vecName2, name) {
         const parent = deleteNode.parentNode;
         parent.removeChild(deleteNode);
         parent.parentNode.removeChild(parent);
-        planeOption.removeChild(planeOptionText);
+        planeOption.removeChildren();
         projElem2Field.removeChild(planeOption);
     })
 }
@@ -492,8 +516,8 @@ const projections = {};
 class Projection3D {
     constructor(vector, projected, onto, x, y, z, element) {
         this.vector = vector; // Actually a THREE.line
-        this.projected = projected;
-        this.onto = onto;
+        this.projected = projected; // Name, not object
+        this.onto = onto; // Name, not object
         this.x = x;
         this.y = y;
         this.z = z;
@@ -515,11 +539,21 @@ function extractVector3Proj(projName) {
 
 function createProjection(projectedVec, onto, name) {
     name = name;
-    const projectedVector = vectors[projectedVec];
+    let projectedVector;
+    if (vectors.hasOwnProperty(projectedVec)) {
+        projectedVector = vectors[projectedVec];
+    }
+    else if (projections.hasOwnProperty(projectedVec)) {
+        projectedVector = projections[projectedVec];
+    }
     let v = [];
     const projected = new THREE.Vector3( projectedVector.x, projectedVector.y, projectedVector.z );
     if (vectors.hasOwnProperty(onto)) {
         const vectorOnto = vectors[onto];
+        v.push(new THREE.Vector3(vectorOnto.x, vectorOnto.y, vectorOnto.z));
+    }
+    else if (projections.hasOwnProperty(onto)) {
+        const vectorOnto = projections[onto];
         v.push(new THREE.Vector3(vectorOnto.x, vectorOnto.y, vectorOnto.z));
     }
     else if (planes.hasOwnProperty(onto)) {
@@ -563,6 +597,13 @@ function createProjection(projectedVec, onto, name) {
     const vectorsNodeSubscriptText = document.createTextNode(onto);
     const vectorsNodeProjText2 = document.createTextNode(projectedVec);
     const deleteNode = document.createElement("button");
+    const deleteIconNode = document.createElement("img");
+    deleteIconNode.src = "/vector-plot-3d/static/trash-2-32.png";
+    deleteIconNode.alt = "X";
+    deleteIconNode.height = 16;
+    deleteIconNode.width = 16;
+    deleteIconNode.className = "deleteImage";
+    deleteNode.appendChild(deleteIconNode);
 
     nameSpan.className = "projectionName"
     deleteNode.className = "projectionDeleteButton"
@@ -587,6 +628,12 @@ function createProjection(projectedVec, onto, name) {
 
     scene.add(projectionVector);
 
+    const projOptionV1 = addToSelect(vectorSelect1, name);
+    const projOptionV2 = addToSelect(vectorSelect2, name);
+
+    const projOptionP1 = addToSelect(projElem1Field, name);
+    const projOptionP2 = addToSelect(projElem2Field, name);
+
     deleteNode.addEventListener("click", function() {
         projectionVector.remove(projectionLabel);
         scene.remove(projectionVector);
@@ -596,10 +643,14 @@ function createProjection(projectedVec, onto, name) {
         const parent = deleteNode.parentNode;
         parent.replaceChildren();
         parent.parentNode.removeChild(parent);
-        vectorOption1.removeChild(vectorOption1Text);
-        vectorOption2.removeChild(vectoroption2Text);
-        vectorSelect1.removeChild(vectorOption1);
-        vectorSelect2.removeChild(vectorOption2);
+        projOptionV1.replaceChildren();
+        projOptionV2.replaceChildren();
+        projOptionP1.replaceChildren();
+        projOptionP2.replaceChildren();
+        vectorSelect1.removeChild(projOptionV1);
+        vectorSelect2.removeChild(projOptionV2);
+        projElem1Field.removeChild(projOptionP1);
+        projElem2Field.removeChild(projOptionP2);
     })
 }
 
@@ -653,7 +704,7 @@ newPlaneButton.addEventListener("click", function() {
         planeErrorMessage.style.display = "block";
         return;
     }
-    if (planes.hasOwnProperty(planeName) || vectors.hasOwnProperty(planeName)) {
+    if (planes.hasOwnProperty(planeName) || vectors.hasOwnProperty(planeName) || projections.hasOwnProperty(planeName)) {
         planeErrorMessage.innerHTML = "Error: Plane names must be unique.";
         planeErrorMessage.style.display = "block";
         return;
@@ -665,8 +716,24 @@ newPlaneButton.addEventListener("click", function() {
         planeErrorMessage.style.display = "block";
         return;
     }
-    const vec1 = vectors[vector1Name].vector;
-    const vec2 = vectors[vector2Name].vector;
+    let vec1;
+    let vec2;
+    if (vectors.hasOwnProperty(vector1Name)) {
+        vec1 = vectors[vector1Name].vector;
+        console.log("found vec1 in vectors");
+    }
+    else if (projections.hasOwnProperty(vector1Name)) {
+        vec1 = projections[vector1Name].vector;
+        console.log("found vec1 in projections");
+    }
+    if (vectors.hasOwnProperty(vector2Name)) {
+        vec2 = vectors[vector2Name].vector;
+        console.log("found vec2 in vectors");
+    }
+    else if (projections.hasOwnProperty(vector2Name)) {
+        vec2 = projections[vector2Name].vector;
+        console.log("found vec2 in projections");
+    }
     const uPos = vec1.geometry.attributes.position;
     const vPos = vec2.geometry.attributes.position;
     const uArr = [uPos.getX(1), uPos.getY(1), uPos.getZ(1)];
